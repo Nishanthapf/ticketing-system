@@ -1,0 +1,470 @@
+[
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_student_section",
+  "fieldtype": "Section Break",
+  "label": "Student Information",
+  "insert_after": "description",
+  "collapsible": 0,
+  "name": "HD Ticket-custom_student_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_student_name",
+  "fieldtype": "Data",
+  "label": "Student Name",
+  "insert_after": "custom_student_section",
+  "read_only": 1,
+  "name": "HD Ticket-custom_student_name"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_student_id",
+  "fieldtype": "Data",
+  "label": "Student ID",
+  "insert_after": "custom_student_name",
+  "read_only": 1,
+  "in_list_view": 1,
+  "in_standard_filter": 1,
+  "name": "HD Ticket-custom_student_id"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_col_break_student_1",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_student_id",
+  "name": "HD Ticket-custom_col_break_student_1"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_programme",
+  "fieldtype": "Data",
+  "label": "Program",
+  "insert_after": "custom_col_break_student_1",
+  "read_only": 1,
+  "name": "HD Ticket-custom_programme"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_current_year",
+  "fieldtype": "Data",
+  "label": "Year",
+  "insert_after": "custom_programme",
+  "read_only": 1,
+  "in_standard_filter": 1,
+  "name": "HD Ticket-custom_current_year"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_current_term",
+  "fieldtype": "Data",
+  "label": "Section / Term",
+  "insert_after": "custom_current_year",
+  "read_only": 1,
+  "name": "HD Ticket-custom_current_term"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_contact_number",
+  "fieldtype": "Phone",
+  "label": "Contact Number",
+  "insert_after": "custom_current_term",
+  "read_only": 1,
+  "name": "HD Ticket-custom_contact_number"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_category_section",
+  "fieldtype": "Section Break",
+  "label": "Category Details",
+  "insert_after": "custom_contact_number",
+  "name": "HD Ticket-custom_category_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_type_of_issue",
+  "fieldtype": "Select",
+  "label": "Type of Issue",
+  "insert_after": "custom_category_section",
+  "options": "",
+  "depends_on": "eval:['Academics','Facilities','Finance','IT','PACE'].includes(doc.ticket_type)",
+  "name": "HD Ticket-custom_type_of_issue"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_hostel",
+  "fieldtype": "Data",
+  "label": "Hostel",
+  "insert_after": "custom_type_of_issue",
+  "read_only": 1,
+  "depends_on": "eval:['Facilities','IT','OOR Intimation','Electric Appliance Declaration','Nominations','Roommate Intimation'].includes(doc.ticket_type)",
+  "name": "HD Ticket-custom_hostel"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_col_break_hostel",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_hostel",
+  "name": "HD Ticket-custom_col_break_hostel"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_floor",
+  "fieldtype": "Data",
+  "label": "Floor",
+  "insert_after": "custom_col_break_hostel",
+  "depends_on": "eval:['Facilities','IT'].includes(doc.ticket_type)",
+  "name": "HD Ticket-custom_floor"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_room_no",
+  "fieldtype": "Data",
+  "label": "Room No",
+  "insert_after": "custom_floor",
+  "read_only": 1,
+  "depends_on": "eval:['Facilities','IT','OOR Intimation','Electric Appliance Declaration','Nominations','Roommate Intimation'].includes(doc.ticket_type)",
+  "name": "HD Ticket-custom_room_no"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_oor_section",
+  "fieldtype": "Section Break",
+  "label": "Out of Residence Details",
+  "insert_after": "custom_room_no",
+  "depends_on": "eval:doc.ticket_type=='OOR Intimation'",
+  "name": "HD Ticket-custom_oor_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_oor_type",
+  "fieldtype": "Select",
+  "label": "Out of Residence Type",
+  "insert_after": "custom_oor_section",
+  "options": "\nArriving Late (Before 2 am)\nNight Out (After 2 am)\nOut of Station",
+  "depends_on": "eval:doc.ticket_type=='OOR Intimation'",
+  "name": "HD Ticket-custom_oor_type"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_oor_date",
+  "fieldtype": "Date",
+  "label": "Date of OOR",
+  "insert_after": "custom_oor_type",
+  "depends_on": "eval:doc.ticket_type=='OOR Intimation'",
+  "name": "HD Ticket-custom_oor_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_appliance_section",
+  "fieldtype": "Section Break",
+  "label": "Appliance Details",
+  "insert_after": "custom_oor_date",
+  "depends_on": "eval:doc.ticket_type=='Electric Appliance Declaration'",
+  "name": "HD Ticket-custom_appliance_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_appliance",
+  "fieldtype": "Data",
+  "label": "Appliance",
+  "insert_after": "custom_appliance_section",
+  "depends_on": "eval:doc.ticket_type=='Electric Appliance Declaration'",
+  "name": "HD Ticket-custom_appliance"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_appliance_wattage",
+  "fieldtype": "Int",
+  "label": "Appliance Wattage (W)",
+  "insert_after": "custom_appliance",
+  "depends_on": "eval:doc.ticket_type=='Electric Appliance Declaration'",
+  "name": "HD Ticket-custom_appliance_wattage"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_library_section",
+  "fieldtype": "Section Break",
+  "label": "Library Book Details",
+  "insert_after": "custom_appliance_wattage",
+  "depends_on": "eval:doc.ticket_type=='Library Book Request'",
+  "name": "HD Ticket-custom_library_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_accession_no",
+  "fieldtype": "Data",
+  "label": "Accession No",
+  "insert_after": "custom_library_section",
+  "depends_on": "eval:doc.ticket_type=='Library Book Request'",
+  "name": "HD Ticket-custom_accession_no"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_book_title",
+  "fieldtype": "Data",
+  "label": "Title",
+  "insert_after": "custom_accession_no",
+  "depends_on": "eval:doc.ticket_type=='Library Book Request'",
+  "name": "HD Ticket-custom_book_title"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_book_author",
+  "fieldtype": "Data",
+  "label": "Author",
+  "insert_after": "custom_book_title",
+  "depends_on": "eval:doc.ticket_type=='Library Book Request'",
+  "name": "HD Ticket-custom_book_author"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_opac_link",
+  "fieldtype": "Data",
+  "label": "OPAC Link",
+  "insert_after": "custom_book_author",
+  "options": "URL",
+  "depends_on": "eval:doc.ticket_type=='Library Book Request'",
+  "name": "HD Ticket-custom_opac_link"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_stores_section",
+  "fieldtype": "Section Break",
+  "label": "Stores Request Details",
+  "insert_after": "custom_opac_link",
+  "depends_on": "eval:doc.ticket_type=='Stores Request'",
+  "name": "HD Ticket-custom_stores_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_material_required_date",
+  "fieldtype": "Date",
+  "label": "Material Required Date",
+  "insert_after": "custom_stores_section",
+  "depends_on": "eval:doc.ticket_type=='Stores Request'",
+  "name": "HD Ticket-custom_material_required_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_cost_center",
+  "fieldtype": "Select",
+  "label": "Cost Center",
+  "insert_after": "custom_material_required_date",
+  "options": "\nCanteen\nCentral Kitchen\nTraining Center\nBoys Mess",
+  "depends_on": "eval:doc.ticket_type=='Stores Request'",
+  "name": "HD Ticket-custom_cost_center"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_item_details",
+  "fieldtype": "Small Text",
+  "label": "Item Details",
+  "insert_after": "custom_cost_center",
+  "depends_on": "eval:doc.ticket_type=='Stores Request'",
+  "name": "HD Ticket-custom_item_details"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_condonation_section",
+  "fieldtype": "Section Break",
+  "label": "Attendance Condonation Details",
+  "insert_after": "custom_item_details",
+  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "name": "HD Ticket-custom_condonation_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_condonation_category",
+  "fieldtype": "Select",
+  "label": "Category",
+  "insert_after": "custom_condonation_section",
+  "options": "\nMedical\nBereavement\nCritical Illness in Family\nMenstrual Leave",
+  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "name": "HD Ticket-custom_condonation_category"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_condonation_start_date",
+  "fieldtype": "Date",
+  "label": "Condonation Start Date",
+  "insert_after": "custom_condonation_category",
+  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "name": "HD Ticket-custom_condonation_start_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_condonation_end_date",
+  "fieldtype": "Date",
+  "label": "Condonation End Date",
+  "insert_after": "custom_condonation_start_date",
+  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "name": "HD Ticket-custom_condonation_end_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_subject_class_hours",
+  "fieldtype": "Small Text",
+  "label": "Subject & Class Hours Missed",
+  "insert_after": "custom_condonation_end_date",
+  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "name": "HD Ticket-custom_subject_class_hours"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_nomination_section",
+  "fieldtype": "Section Break",
+  "label": "Nomination Details",
+  "insert_after": "custom_subject_class_hours",
+  "depends_on": "eval:doc.ticket_type=='Nominations'",
+  "name": "HD Ticket-custom_nomination_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_nomination_post",
+  "fieldtype": "Data",
+  "label": "I nominate myself for post of",
+  "insert_after": "custom_nomination_section",
+  "depends_on": "eval:doc.ticket_type=='Nominations'",
+  "name": "HD Ticket-custom_nomination_post"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sop",
+  "fieldtype": "Long Text",
+  "label": "Statement of Purpose",
+  "insert_after": "custom_nomination_post",
+  "depends_on": "eval:doc.ticket_type=='Nominations'",
+  "name": "HD Ticket-custom_sop"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sba_section",
+  "fieldtype": "Section Break",
+  "label": "SBA Committee Application",
+  "insert_after": "custom_sop",
+  "depends_on": "eval:doc.ticket_type=='SBA Committee Application'",
+  "name": "HD Ticket-custom_sba_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sba_committee",
+  "fieldtype": "Select",
+  "label": "Applying to Committee",
+  "insert_after": "custom_sba_section",
+  "options": "\nAcademic Committee\nAdmissions Committee\nCultural Committee\nDisciplinary Committee\nEnvironment Committee\nFinance Committee\nGrievance Committee\nHealth Committee\nHostel Committee\nIT Committee\nLibrary Committee\nMoot Court Committee\nPlacement Committee\nPublications Committee\nSports Committee\nWelfare Committee",
+  "depends_on": "eval:doc.ticket_type=='SBA Committee Application'",
+  "name": "HD Ticket-custom_sba_committee"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sba_q1",
+  "fieldtype": "Long Text",
+  "label": "Question 1",
+  "insert_after": "custom_sba_committee",
+  "depends_on": "eval:doc.ticket_type=='SBA Committee Application'",
+  "name": "HD Ticket-custom_sba_q1"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sba_q2",
+  "fieldtype": "Long Text",
+  "label": "Question 2",
+  "insert_after": "custom_sba_q1",
+  "depends_on": "eval:doc.ticket_type=='SBA Committee Application'",
+  "name": "HD Ticket-custom_sba_q2"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sba_q3",
+  "fieldtype": "Long Text",
+  "label": "Question 3",
+  "insert_after": "custom_sba_q2",
+  "depends_on": "eval:doc.ticket_type=='SBA Committee Application'",
+  "name": "HD Ticket-custom_sba_q3"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_sba_other_comments",
+  "fieldtype": "Long Text",
+  "label": "Other Comments",
+  "insert_after": "custom_sba_q3",
+  "depends_on": "eval:doc.ticket_type=='SBA Committee Application'",
+  "name": "HD Ticket-custom_sba_other_comments"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_roommate_section",
+  "fieldtype": "Section Break",
+  "label": "Roommate Details",
+  "insert_after": "custom_sba_other_comments",
+  "depends_on": "eval:doc.ticket_type=='Roommate Intimation'",
+  "name": "HD Ticket-custom_roommate_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_roommate_1",
+  "fieldtype": "Data",
+  "label": "Roommate 1",
+  "insert_after": "custom_roommate_section",
+  "depends_on": "eval:doc.ticket_type=='Roommate Intimation'",
+  "description": "Name of in-campus student (AAD)",
+  "name": "HD Ticket-custom_roommate_1"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_roommate_2",
+  "fieldtype": "Data",
+  "label": "Roommate 2",
+  "insert_after": "custom_roommate_1",
+  "depends_on": "eval:doc.ticket_type=='Roommate Intimation'",
+  "description": "Name of in-campus student (AAD)",
+  "name": "HD Ticket-custom_roommate_2"
+ }
+]

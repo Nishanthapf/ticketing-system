@@ -1,0 +1,90 @@
+[
+ {
+  "doctype": "HD Team",
+  "name": "IT Team",
+  "team_name": "IT Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Academics Team",
+  "team_name": "Academics Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Facilities Team",
+  "team_name": "Facilities Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Finance Team",
+  "team_name": "Finance Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Food and Beverage Team",
+  "team_name": "Food and Beverage Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Library Team",
+  "team_name": "Library Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Stores Team",
+  "team_name": "Stores Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "PACE Team",
+  "team_name": "PACE Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Grade Team",
+  "team_name": "Grade Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Internship Team",
+  "team_name": "Internship Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ },
+ {
+  "doctype": "HD Team",
+  "name": "Electives Team",
+  "team_name": "Electives Team",
+  "disabled": 0,
+  "ignore_restrictions": 0,
+  "users": []
+ }
+]

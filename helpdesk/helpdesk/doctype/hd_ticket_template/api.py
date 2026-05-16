@@ -6,7 +6,7 @@ import frappe
 from pypika import JoinType
 
 from helpdesk.helpdesk.doctype.hd_form_script.hd_form_script import get_form_script
-from helpdesk.utils import check_permissions
+from helpdesk.utils import check_permissions, is_agent
 
 DOCTYPE_TEMPLATE = "HD Ticket Template"
 DOCTYPE_TEMPLATE_FIELD = "HD Ticket Template Field"
@@ -29,7 +29,9 @@ def get_one(name: str):
         "fields": fields,
         "description_template": description_template,
         "_form_script": get_form_script(
-            "HD Ticket", apply_on_new_page=True, is_customer_portal=False
+            "HD Ticket",
+            apply_on_new_page=True,
+            is_customer_portal=not is_agent(),
         ),
     }
 
