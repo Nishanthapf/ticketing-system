@@ -100,6 +100,11 @@
    "role": "HD Customer Manager",
    "select": 1,
    "share": 1
+  },
+  {
+   "role": "All",
+   "read": 1,
+   "select": 1
   }
  ],
  "quick_entry": 1,

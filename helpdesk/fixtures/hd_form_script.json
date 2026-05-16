@@ -1,0 +1,12 @@
+[
+ {
+  "doctype": "HD Form Script",
+  "name": "NLS Student Ticket Auto-populate",
+  "dt": "HD Ticket",
+  "enabled": 1,
+  "apply_to": "Form",
+  "apply_to_customer_portal": 1,
+  "apply_on_new_page": 1,
+  "script": "const ISSUE_OPTIONS = {\n  'Academics':   ['Attendance','Certificates','Examination','Letters','Learning Material','Projects','Viva','Others'],\n  'Facilities':  ['Carpentry','Electrical','House Keeping','Plumbing','Security','Others'],\n  'Finance':     ['Fees','Others'],\n  'IT':          ['Admin Portal','Gsuite','Group Creation','ID Card','Internet Connectivity','Learning Platform','Microsoft Office','Online Library Access','Others'],\n  'PACE':        ['Admission','Academics','Degree and Certificate','Examination/Result','Fee-related','Grievance','Technical Issues','Transcripts'],\n};\n\nasync function setupForm({ doc, call, applyFilters }) {\n  // Populate student fields in background — does NOT block onChange registration\n  call('helpdesk.api.nls_student.get_student_context').then(function(ctx) {\n    if (!ctx) return;\n    var fields = [\n      'custom_student_name','custom_student_id','custom_programme',\n      'custom_current_year','custom_current_term',\n      'custom_contact_number','custom_hostel','custom_room_no'\n    ];\n    fields.forEach(function(f) { if (f in doc) doc[f] = ctx[f] || ''; });\n  }).catch(function(e) { console.error('NLS student context error:', e); });\n\n  // Return onChange IMMEDIATELY — no await before this point\n  return {\n    onChange: {\n      ticket_type: function(value) {\n        var opts = ISSUE_OPTIONS[value];\n        applyFilters('custom_type_of_issue', opts || null);\n      }\n    }\n  };\n}"
+ }
+]

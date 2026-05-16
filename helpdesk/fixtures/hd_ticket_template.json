@@ -1,0 +1,353 @@
+[
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Default",
+  "template_name": "Default",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",                  "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_name",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_id",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",             "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",          "required": 0, "hide_from_customer": 0, "placeholder": "e.g. Term 1"},
+   {"fieldname": "custom_contact_number",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",                "required": 0, "hide_from_customer": 0, "placeholder": "e.g. Hostel A"},
+   {"fieldname": "custom_floor",                 "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",               "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_type_of_issue",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_oor_type",              "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_oor_date",              "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_appliance",             "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_appliance_wattage",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_accession_no",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_book_title",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_book_author",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_opac_link",             "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_material_required_date","required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_cost_center",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_item_details",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_condonation_category",  "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_condonation_start_date","required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_condonation_end_date",  "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_subject_class_hours",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_nomination_post",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sop",                   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_committee",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_q1",                "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_q2",                "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_q3",                "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_other_comments",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_roommate_1",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_roommate_2",            "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Academics",
+  "template_name": "Academics",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_type_of_issue",  "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Facilities",
+  "template_name": "Facilities",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",            "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number",  "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_floor",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_type_of_issue",   "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Finance",
+  "template_name": "Finance",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_type_of_issue",  "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Food and Beverage",
+  "template_name": "Food and Beverage",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "IT",
+  "template_name": "IT",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_floor",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_type_of_issue",  "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Library",
+  "template_name": "Library",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Library Book Request",
+  "template_name": "Library Book Request",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_accession_no",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_book_title",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_book_author",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_opac_link",      "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Stores Request",
+  "template_name": "Stores Request",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",                  "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_contact_number",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_material_required_date","required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_cost_center",           "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_item_details",          "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "PACE",
+  "template_name": "PACE",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_type_of_issue",  "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "OOR Intimation",
+  "template_name": "OOR Intimation",
+  "about": "<p>No approval required. Ticket will be automatically closed on submission.</p>",
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_oor_type",       "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_oor_date",       "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Electric Appliance Declaration",
+  "template_name": "Electric Appliance Declaration",
+  "about": "<p>No approval required. Ticket will be automatically closed on submission.</p>",
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",             "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_appliance",        "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_appliance_wattage","required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Nominations",
+  "template_name": "Nominations",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",            "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_nomination_post", "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_sop",             "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "SBA Committee Application",
+  "template_name": "SBA Committee Application",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",             "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_committee",    "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_q1",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_q2",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_q3",           "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_sba_other_comments","required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Attendance Condonation Under AER",
+  "template_name": "Attendance Condonation Under AER",
+  "about": "<p>Your application will be considered at the end of the Trimester only if your attendance in the concerned subject is at least 66%. Only One attachment is permitted — please merge your supporting documents into one document and upload.</p>",
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",                  "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",             "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_condonation_category",  "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_condonation_start_date","required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_condonation_end_date",  "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_subject_class_hours",   "required": 1, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Grade",
+  "template_name": "Grade",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Internship",
+  "template_name": "Internship",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Electives",
+  "template_name": "Electives",
+  "about": null,
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",           "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_term",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_contact_number", "required": 0, "hide_from_customer": 0}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Roommate Intimation",
+  "template_name": "Roommate Intimation",
+  "about": "<p>Please use this form to intimate your roommate choice. This request does not constitute confirmation of room-mate or room allotment. The room will be allocated only to students already resident in the hostels and not debarred by any disciplinary proceedings. Only one form should be submitted for a room on behalf of all roommates.</p>",
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",          "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_student_id",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_name",  "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_programme",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_hostel",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_room_no",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_roommate_1",    "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_roommate_2",    "required": 0, "hide_from_customer": 0}
+  ]
+ }
+]

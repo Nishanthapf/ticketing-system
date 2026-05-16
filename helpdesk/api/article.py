@@ -25,7 +25,10 @@ def get_noun_phrases(blob: TextBlob):
 def search_with_enough_results(
     prev_res: list, query: str, qtype="and"
 ) -> tuple[list, bool]:
-    out = hd_search(query, qtype=qtype)
+    try:
+        out = hd_search(query, qtype=qtype)
+    except Exception:
+        return prev_res, False
     if not out:
         return prev_res, len(prev_res) == NUM_RESULTS
     items = prev_res + out[0].get("items", [])

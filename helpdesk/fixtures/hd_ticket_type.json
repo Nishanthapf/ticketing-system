@@ -1,0 +1,128 @@
+[
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Academics",
+  "description": "Issues related to attendance, certificates, examination, letters, learning material, projects, viva, and other academic matters.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Facilities",
+  "description": "Issues related to hostel facilities including carpentry, electrical, housekeeping, plumbing, security, and others.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Finance",
+  "description": "Issues related to fees and other finance matters.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Food and Beverage",
+  "description": "Issues related to food and beverage services on campus.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "IT",
+  "description": "Issues related to admin portal, G-Suite, group creation, ID card, internet connectivity, learning platform, Microsoft Office, online library access, and others.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Library",
+  "description": "Issues related to library services.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Stores Request",
+  "description": "Material requisition from stores for canteen, central kitchen, training center, or boys mess.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "PACE",
+  "description": "Issues related to admission, academics, degree and certificate, examination/result, fee-related, grievance, technical issues, and transcripts for PACE students.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Library Book Request",
+  "description": "Request for a specific library book by accession number, title, and author.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "OOR Intimation",
+  "description": "Out of Residence intimation — arriving late, night out, or out of station. No approval required; ticket auto-closes on submission.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Electric Appliance Declaration",
+  "description": "Declaration of electric appliance in room. No approval required; ticket auto-closes on submission.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Nominations",
+  "description": "Self-nomination for a student body post with statement of purpose.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "SBA Committee Application",
+  "description": "Application to join an SBA committee — includes three questions and comments.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Attendance Condonation Under AER",
+  "description": "Application for attendance condonation under AER for medical, bereavement, critical illness, or menstrual leave reasons.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Grade",
+  "description": "Issues related to grades for a specific subject.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Internship",
+  "description": "Issues related to internship matters.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Electives",
+  "description": "Issues related to elective course selection or matters.",
+  "disabled": 0,
+  "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Roommate Intimation",
+  "description": "Roommate preference intimation for hostel room allocation. Does not constitute confirmation of room-mate or room allotment.",
+  "disabled": 0,
+  "is_system": 0
+ }
+]

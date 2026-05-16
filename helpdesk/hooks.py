@@ -74,6 +74,62 @@ user_invitation = {
     "extra_invite_params": ["customer", "contact"],
 }
 
+fixtures = [
+    # NLS campus ticket types
+    {
+        "doctype": "HD Ticket Type",
+        "filters": [["name", "in", [
+            "Academics", "Facilities", "Finance", "Food and Beverage",
+            "IT", "Library", "Stores Request", "PACE", "Library Book Request",
+            "OOR Intimation", "Electric Appliance Declaration", "Nominations",
+            "SBA Committee Application", "Attendance Condonation Under AER",
+            "Grade", "Internship", "Electives", "Roommate Intimation"
+        ]]]
+    },
+    # Department teams
+    {
+        "doctype": "HD Team",
+        "filters": [["name", "in", [
+            "IT Team", "Academics Team", "Facilities Team", "Finance Team",
+            "Food and Beverage Team", "Library Team", "Stores Team",
+            "PACE Team", "Grade Team", "Internship Team", "Electives Team"
+        ]]]
+    },
+    # Student auto-populate + dynamic Type of Issue form script
+    {
+        "doctype": "HD Form Script",
+        "filters": [["name", "=", "NLS Student Ticket Auto-populate"]]
+    },
+    # Custom fields on HD Ticket for student info and category-specific fields
+    {
+        "doctype": "Custom Field",
+        "filters": [["name", "like", "HD Ticket-custom_%"]]
+    },
+    # Clear link_filters on ticket_type, priority, agent_group — prevents
+    # JSONDecodeError / PermissionError for portal users (All role has only
+    # 'select' on HD Ticket Type, not 'read', so filtering by 'disabled' fails)
+    {
+        "doctype": "Property Setter",
+        "filters": [["name", "in", [
+            "HD Ticket-ticket_type-link_filters",
+            "HD Ticket-priority-link_filters",
+            "HD Ticket-agent_group-link_filters"
+        ]]]
+    },
+    # One template per category — controls exactly which fields appear on the portal form
+    {
+        "doctype": "HD Ticket Template",
+        "filters": [["name", "in", [
+            "Default",
+            "Academics", "Facilities", "Finance", "Food and Beverage",
+            "IT", "Library", "Library Book Request", "Stores Request", "PACE",
+            "OOR Intimation", "Electric Appliance Declaration", "Nominations",
+            "SBA Committee Application", "Attendance Condonation Under AER",
+            "Grade", "Internship", "Electives", "Roommate Intimation"
+        ]]]
+    },
+]
+
 doc_events = {
     "Assignment Rule": {
         "on_trash": "helpdesk.extends.assignment_rule.on_assignment_rule_trash",
@@ -100,6 +156,10 @@ doc_events = {
     },
     "Notification Log": {
         "before_insert": "helpdesk.extends.notification_log.before_insert",
+    },
+    # Auto-close OOR Intimation and Electric Appliance Declaration on creation
+    "HD Ticket": {
+        "after_insert": "helpdesk.api.nls_student.auto_close_intimation_ticket",
     },
 }
 

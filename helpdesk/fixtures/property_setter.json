@@ -1,0 +1,35 @@
+[
+ {
+  "doctype": "Property Setter",
+  "name": "HD Ticket-ticket_type-link_filters",
+  "doc_type": "HD Ticket",
+  "field_name": "ticket_type",
+  "property": "link_filters",
+  "property_type": "Text",
+  "value": "[]",
+  "doctype_or_field": "DocField",
+  "is_system_generated": 0
+ },
+ {
+  "doctype": "Property Setter",
+  "name": "HD Ticket-priority-link_filters",
+  "doc_type": "HD Ticket",
+  "field_name": "priority",
+  "property": "link_filters",
+  "property_type": "Text",
+  "value": "[]",
+  "doctype_or_field": "DocField",
+  "is_system_generated": 0
+ },
+ {
+  "doctype": "Property Setter",
+  "name": "HD Ticket-agent_group-link_filters",
+  "doc_type": "HD Ticket",
+  "field_name": "agent_group",
+  "property": "link_filters",
+  "property_type": "Text",
+  "value": "[]",
+  "doctype_or_field": "DocField",
+  "is_system_generated": 0
+ }
+]
