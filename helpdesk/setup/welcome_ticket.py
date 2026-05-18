@@ -83,13 +83,19 @@ def create_ticket():
     d.contact = AUTHOR_NAME
     d.via_customer_portal = True
     d.insert()
-    add_assign(
-        {
-            "doctype": "HD Ticket",
-            "name": d.name,
-            "assign_to": ["Administrator"],
-        }
-    )
+    try:
+        add_assign(
+            {
+                "doctype": "HD Ticket",
+                "name": d.name,
+                "assign_to": ["Administrator"],
+            }
+        )
+    except Exception:
+        # add_assign internally calls get_cached_value("User", ...) which loads all child tables.
+        # If a child table (e.g. tabPreferred Function from lms) doesn't exist yet, skip the
+        # assignment — it's cosmetic and won't affect helpdesk functionality.
+        pass
 
 
 def create_contact():

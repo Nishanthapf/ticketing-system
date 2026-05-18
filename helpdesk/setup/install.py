@@ -28,7 +28,12 @@ def after_install():
     create_fallback_ticket_type()
     create_helpdesk_folder()
     create_ootb_ticket_types()
-    create_welcome_ticket()
+    try:
+        create_welcome_ticket()
+    except Exception:
+        # Welcome ticket is cosmetic; skip silently if child tables (e.g. tabPreferred Function
+        # from lms) haven't been created yet because lms isn't installed at this point.
+        pass
     create_ticket_feedback_options()
     add_property_setters()
     add_website_settings_permission()
