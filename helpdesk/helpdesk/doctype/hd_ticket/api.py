@@ -24,16 +24,25 @@ from helpdesk.utils import (
     agent_only,
     check_permissions,
     get_customer,
+    is_admin,
     is_agent,
     parse_call_logs,
 )
+from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import _role_has_doctype_permission
 
 
 @frappe.whitelist()
 # flake8: noqa
 def new(doc: dict, attachments: list[dict] = []):
+    user = frappe.session.user
+    if not is_admin(user) and not is_agent(user):
+        if not _role_has_doctype_permission(user, "create"):
+            frappe.throw(
+                frappe._("You do not have permission to create tickets"),
+                frappe.PermissionError,
+            )
     doc["doctype"] = "HD Ticket"
-    doc["via_customer_portal"] = bool(frappe.session.user)
+    doc["via_customer_portal"] = bool(user)
     doc["attachments"] = attachments
     d = frappe.get_doc(doc).insert()
     return d

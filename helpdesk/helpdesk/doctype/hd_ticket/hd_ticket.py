@@ -1190,6 +1190,23 @@ class HDTicket(Document):
 # Check if `user` has access to this specific ticket (`doc`). This implements extra
 # permission checks which is not possible with standard permission system. This function
 # is being called from hooks. `doc` is the ticket to check against
+def _role_has_doctype_permission(user: str, ptype: str) -> bool:
+    """
+    Return True if any role assigned to user has the given ptype on HD Ticket.
+    Mirrors Frappe's own logic: if Custom DocPerm rows exist for this doctype,
+    they completely replace DocPerm rows (Role Permissions Manager takes over).
+    """
+    roles = frappe.get_roles(user)
+    has_custom = frappe.db.exists("Custom DocPerm", {"parent": "HD Ticket", "permlevel": 0})
+    table = "Custom DocPerm" if has_custom else "DocPerm"
+    return bool(
+        frappe.db.exists(
+            table,
+            {"parent": "HD Ticket", "role": ["in", roles], ptype: 1, "permlevel": 0},
+        )
+    )
+
+
 def has_permission(doc, user=None):
     if not user:
         user = frappe.session.user
@@ -1201,6 +1218,10 @@ def has_permission(doc, user=None):
         or is_admin(user)
         or doc.customer in get_customer(user)
     ):
+        # Non-admin, non-agent users must also hold role-level read permission.
+        if not is_admin(user) and not is_agent(user):
+            if not _role_has_doctype_permission(user, "read"):
+                return False
         return True
 
     if not is_agent(user):
