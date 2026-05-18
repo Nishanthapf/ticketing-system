@@ -61,11 +61,13 @@ def create_ticket():
         return
 
     # Render template with the current user's information
-    user_doc = frappe.get_doc("User", frappe.session.user)
-    if (user_doc.name or "").strip().lower() == "administrator":
+    # Use db.get_value to avoid loading child tables (e.g. tabPreferred Function from telephony)
+    # that may not yet exist when helpdesk installs after telephony
+    user_name = frappe.session.user or ""
+    if user_name.strip().lower() == "administrator":
         first_name = "there"
     else:
-        first_name = (user_doc.first_name or "").strip() or "there"
+        first_name = frappe.db.get_value("User", user_name, "first_name") or "there"
     rendered_content = frappe.render_template(
         CONTENT,
         {
