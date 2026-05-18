@@ -12,7 +12,8 @@
   "is_system",
   "disabled",
   "description",
-  "priority"
+  "priority",
+  "team"
  ],
  "fields": [
   {
@@ -26,6 +27,13 @@
    "in_list_view": 1,
    "label": "Priority",
    "options": "HD Ticket Priority"
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Team",
+   "options": "HD Team"
   },
   {
    "default": "0",
@@ -42,7 +50,7 @@
   }
  ],
  "links": [],
- "modified": "2026-02-24 09:05:55.809201",
+ "modified": "2026-05-18 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Ticket Type",

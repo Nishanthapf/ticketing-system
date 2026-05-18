@@ -25,6 +25,7 @@ after_install = "helpdesk.setup.install.after_install"
 after_migrate = [
     "helpdesk.search.build_index_in_background",
     "helpdesk.search.download_corpus",
+    "helpdesk.setup.ticket_type_team_mapping.sync_ticket_type_teams",
 ]
 
 
