@@ -2,6 +2,7 @@ import frappe
 
 from helpdesk.utils import agent_only, get_agent_name, get_agents_team
 from helpdesk.utils import is_agent as _is_agent
+from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import _role_has_doctype_permission
 
 
 @frappe.whitelist()
@@ -31,6 +32,7 @@ def get_user():
     agent_name = get_agent_name()
     has_agent_record = bool(agent_name)
     has_desk_access = is_agent or is_admin
+    can_create_ticket = is_admin or is_agent or _role_has_doctype_permission(current_user or "", "create")
     availability = (
         frappe.db.get_value(
             "HD Agent",
@@ -46,7 +48,7 @@ def get_user():
     user_name = user.full_name
     user_id = user.name
     username = user.username
-    is_manager = ("Agent Manager") in frappe.get_roles(current_user)
+    is_manager = "Agent Manager" in roles
     user_team = get_agents_team()
     user_team_names = [team["team_name"] for team in user_team]
     language = user.language or frappe.db.get_single_value(
@@ -58,6 +60,7 @@ def get_user():
         "is_admin": is_admin,
         "is_agent": is_agent,
         "has_agent_record": has_agent_record,
+        "can_create_ticket": can_create_ticket,
         "user_id": user_id,
         "is_manager": is_manager,
         "user_image": user_image,

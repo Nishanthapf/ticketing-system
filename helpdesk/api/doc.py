@@ -113,16 +113,19 @@ def get_list_data(
     rows.append("name") if "name" not in rows else rows
     if doctype == "HD Ticket":
         rows.append("_seen") if "_seen" not in rows else rows
-    data = (
-        frappe.get_list(
-            doctype,
-            fields=rows,
-            filters=filters,
-            order_by=order_by,
-            page_length=page_length,
+    try:
+        data = (
+            frappe.get_list(
+                doctype,
+                fields=rows,
+                filters=filters,
+                order_by=order_by,
+                page_length=page_length,
+            )
+            or []
         )
-        or []
-    )
+    except frappe.PermissionError:
+        data = []
 
     if doctype == "TP Call Log":
         data = parse_call_logs(data)
@@ -224,14 +227,19 @@ def get_list_data(
                     "options": options,
                 }
 
+    try:
+        total_count = frappe.get_list(doctype, fields=[COUNT_NAME], filters=filters)[
+            0
+        ].get("count", 0)
+    except (frappe.PermissionError, IndexError):
+        total_count = 0
+
     return {
         "data": data,
         "columns": columns,
         "rows": rows,
         "fields": fields if doctype == "HD Ticket" else [],
-        "total_count": frappe.get_list(doctype, fields=[COUNT_NAME], filters=filters)[
-            0
-        ].get("count", 0),
+        "total_count": total_count,
         "row_count": len(data),
         "group_by_field": group_by_field,
         "view_type": view_type,

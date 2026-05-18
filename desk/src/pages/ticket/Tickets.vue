@@ -12,6 +12,7 @@
       </template>
       <template #right-header>
         <RouterLink
+          v-if="canCreateTicket"
           class="inline-flex"
           :to="{ name: isCustomerPortal ? 'TicketNew' : 'TicketAgentNew' }"
         >
@@ -106,7 +107,7 @@ const hasActiveFilters = computed(
 );
 
 const { $dialog, $socket } = globalStore();
-const { isManager, userId } = useAuthStore();
+const { isManager, userId, canCreateTicket } = useAuthStore();
 
 const listViewRef = ref(null);
 const showExportModal = ref(false);
