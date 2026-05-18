@@ -76,6 +76,7 @@ class HDTicket(Document):
     def before_validate(self):
         self.check_update_perms()
         self.set_ticket_type()
+        self.set_team_from_ticket_type()
         self.set_raised_by()
         self.set_priority()
         self.set_first_responded_on()
@@ -251,6 +252,13 @@ class HDTicket(Document):
         self.ticket_type = (
             frappe.db.get_single_value("HD Settings", "default_ticket_type") or ""
         )
+
+    def set_team_from_ticket_type(self):
+        if self.agent_group or not self.ticket_type:
+            return
+        team = frappe.db.get_value("HD Ticket Type", self.ticket_type, "team")
+        if team:
+            self.agent_group = team
 
     def set_raised_by(self):
         if self.raised_by:

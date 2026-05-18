@@ -25,11 +25,21 @@ class HDTeam(Document):
         self.capture_team_creation_event()
 
     def on_update(self):
-        if not self.assignment_rule:
+        if self.is_new():
             return
-        ar = frappe.get_doc("Assignment Rule", self.assignment_rule)
+        # Always read from DB — setValue / partial saves don't populate assignment_rule in memory
+        assignment_rule = frappe.db.get_value("HD Team", self.name, "assignment_rule")
+        if not assignment_rule:
+            return
+        if not frappe.db.exists("Assignment Rule", assignment_rule):
+            # Linked rule was deleted externally — recreate it, don't leave team broken
+            self.create_assignment_rule()
+            return
+        ar = frappe.get_doc("Assignment Rule", assignment_rule)
         self.sync_users(ar)
-        ar.disabled = bool(self.disabled)
+        has_users = bool([u.user for u in self.users if u.user])
+        # Disable when no users — prevents IndexError crash on ticket save
+        ar.disabled = bool(self.disabled) or not has_users
         ar.save(ignore_permissions=True)
 
     def on_trash(self):
@@ -51,9 +61,13 @@ class HDTeam(Document):
             )
 
     def after_rename(self, olddn, newdn, merge=False):
-        if not self.assignment_rule:
+        assignment_rule = self.assignment_rule or frappe.db.get_value(
+            "HD Team", newdn, "assignment_rule"
+        )
+        if not assignment_rule:
             self.create_assignment_rule()
-        ar = frappe.get_doc("Assignment Rule", self.assignment_rule)
+            return
+        ar = frappe.get_doc("Assignment Rule", assignment_rule)
         ar.assign_condition, ar.assign_condition_json = self.assign_condition(newdn)
         ar.unassign_condition, ar.unassign_condition_json = self.unassign_condition(
             newdn
@@ -71,7 +85,8 @@ class HDTeam(Document):
             self.name
         )
         ar.priority = 1
-        ar.disabled = bool(self.disabled)
+        has_users = bool([u.user for u in self.users if u.user])
+        ar.disabled = bool(self.disabled) or not has_users
 
         for day in ASSIGNMENT_DAYS:
             ar.append("assignment_days", {"doctype": "Assignment Rule Day", "day": day})

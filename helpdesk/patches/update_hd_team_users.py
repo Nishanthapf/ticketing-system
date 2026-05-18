@@ -11,12 +11,13 @@ def execute():
             "HD Team Member", filters={"parent": team}, pluck="user"
         )  # agents in HD Team doctype
 
-        for agent in existing_agents:
-            is_agent_active = frappe.get_value("HD Agent", agent, "is_active")
-            if is_agent_active and agent not in team_users:
-                team_doc = (
-                    frappe.get_doc("HD Team", team)
-                    .append("users", {"user": agent})
-                    .save()
-                )
-                print("Agent Added")
+        agents_to_add = [
+            a for a in existing_agents
+            if frappe.get_value("HD Agent", a, "is_active") and a not in team_users
+        ]
+        if agents_to_add:
+            team_doc = frappe.get_doc("HD Team", team)
+            for agent in agents_to_add:
+                team_doc.append("users", {"user": agent})
+            team_doc.save()
+            print("Agent Added")
