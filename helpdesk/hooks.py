@@ -75,7 +75,12 @@ fixtures = [
             "Food and Beverage Team", "Library Team", "Stores Team",
             "PACE Team", "Grade Team", "Internship Team", "Electives Team",
             "PACE Team - Group A", "PACE Team - Group B",
-            "PACE Team - PGDAL", "PACE Team - PGDTXL"
+            "PACE Team - PGDAL", "PACE Team - PGDTXL",
+            "AER Condonation - BA LLB (1-3 Year)",
+            "AER Condonation - BA LLB (4-5 Year)",
+            "AER Condonation - MPP and LLM",
+            "AER Condonation - LLB Hons",
+            "AER Condonation - PhD"
         ]]]
     },
     # Student auto-populate + dynamic Type of Issue form script

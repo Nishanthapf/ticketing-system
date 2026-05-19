@@ -198,6 +198,7 @@ const template = createResource({
       router,
       $dialog,
       applyFilters,
+      setAbout: (html: string) => { template.data.about = html; },
     });
     setupTemplateFields(data.fields);
   },
