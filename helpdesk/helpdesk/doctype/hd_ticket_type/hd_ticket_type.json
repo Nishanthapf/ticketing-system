@@ -14,7 +14,8 @@
   "disabled",
   "description",
   "priority",
-  "team"
+  "team",
+  "year_wise_assignment_rules"
  ],
  "fields": [
   {
@@ -35,6 +36,13 @@
    "in_list_view": 1,
    "label": "Team",
    "options": "HD Team"
+  },
+  {
+   "fieldname": "year_wise_assignment_rules",
+   "fieldtype": "Table",
+   "label": "Programme / Year-wise Assignment Rules",
+   "options": "HD Ticket Type Assignment Rule",
+   "allow_in_quick_entry": 0
   },
   {
    "default": "0",

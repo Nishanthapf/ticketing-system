@@ -26,6 +26,18 @@ class HDTeam(Document):
         existing = frappe.db.get_value("HD Team", self.name, "assignment_rule")
         if existing and frappe.db.exists("Assignment Rule", existing):
             return
+        # Fixture re-import deletes and re-inserts the team, so DB has no assignment_rule link.
+        # Check if a rule with the canonical name already exists and reuse it.
+        canonical = f"{self.name} - Support Rotation"
+        existing_by_name = frappe.db.get_value(
+            "Assignment Rule",
+            {"name": ["like", f"{canonical}%"], "document_type": "HD Ticket"},
+            "name",
+            order_by="modified desc",
+        )
+        if existing_by_name:
+            self.db_set("assignment_rule", existing_by_name, update_modified=False)
+            return
         self.create_assignment_rule()
         self.capture_team_creation_event()
 

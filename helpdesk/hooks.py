@@ -76,24 +76,18 @@ user_invitation = {
 }
 
 fixtures = [
-    # NLS campus ticket types
-    {
-        "doctype": "HD Ticket Type",
-        "filters": [["name", "in", [
-            "Academics", "Facilities", "Finance", "Food and Beverage",
-            "IT", "Library", "Stores Request", "PACE", "Library Book Request",
-            "OOR Intimation", "Electric Appliance Declaration", "Nominations",
-            "SBA Committee Application", "Attendance Condonation Under AER",
-            "Grade", "Internship", "Electives", "Roommate Intimation"
-        ]]]
-    },
-    # Department teams
+    # HD Ticket Type rows are seeded via hd_ticket_type.json on fresh install only.
+    # They are intentionally NOT listed here so that migrate never overwrites
+    # admin-managed child table data (year_wise_assignment_rules).
+    # Department teams — new PACE sub-teams included so they exist on fresh install
     {
         "doctype": "HD Team",
         "filters": [["name", "in", [
             "IT Team", "Academics Team", "Facilities Team", "Finance Team",
             "Food and Beverage Team", "Library Team", "Stores Team",
-            "PACE Team", "Grade Team", "Internship Team", "Electives Team"
+            "PACE Team", "Grade Team", "Internship Team", "Electives Team",
+            "PACE Team - Group A", "PACE Team - Group B",
+            "PACE Team - PGDAL", "PACE Team - PGDTXL"
         ]]]
     },
     # Student auto-populate + dynamic Type of Issue form script
