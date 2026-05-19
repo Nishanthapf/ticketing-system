@@ -96,6 +96,7 @@ export function parseField(field, doc) {
     disabled: field.disabled,
     readonly:
       field.readonly ||
+      field.read_only ||
       (field.read_only_depends_on &&
         evaluateDependsOnValue(field.read_only_depends_on, doc)),
   };

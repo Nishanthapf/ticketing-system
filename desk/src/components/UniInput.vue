@@ -10,9 +10,9 @@
       <component
         class="w-full"
         :is="component"
-        :placeholder="placeholder"
+        :placeholder="field.readonly ? '' : placeholder"
         :value="transValue"
-        :disabled="field.disabled"
+        :disabled="field.disabled || field.readonly"
         :model-value="transValue"
         @update:model-value="emitUpdate(field.fieldname, $event)"
         @change="
