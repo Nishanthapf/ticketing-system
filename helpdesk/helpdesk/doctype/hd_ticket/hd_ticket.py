@@ -585,6 +585,12 @@ class HDTicket(Document):
     @property
     def portal_uri(self):
         root_uri = frappe.utils.get_url()
+        # Check if the ticket was raised by a student; if so, link to the student portal
+        is_student = frappe.db.exists("Student Master", {"user": self.raised_by}) or \
+            frappe.db.exists("Student Master", {"email": self.raised_by}) or \
+            frappe.db.exists("Student Master", {"official_email_id": self.raised_by})
+        if is_student:
+            return f"{root_uri}/student-portal/support?ticket={self.name}"
         return f"{root_uri}/helpdesk/my-tickets/{self.name}"
 
     @frappe.whitelist()
