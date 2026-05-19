@@ -21,6 +21,11 @@ ASSIGNMENT_DAYS = [
 
 class HDTeam(Document):
     def after_insert(self):
+        # Guard: don't create a duplicate rule if one already exists for this team.
+        # This can happen during bench migrate / fixture re-import.
+        existing = frappe.db.get_value("HD Team", self.name, "assignment_rule")
+        if existing and frappe.db.exists("Assignment Rule", existing):
+            return
         self.create_assignment_rule()
         self.capture_team_creation_event()
 
@@ -30,6 +35,8 @@ class HDTeam(Document):
         # Always read from DB — setValue / partial saves don't populate assignment_rule in memory
         assignment_rule = frappe.db.get_value("HD Team", self.name, "assignment_rule")
         if not assignment_rule:
+            # Rule missing — create one instead of leaving team broken
+            self.create_assignment_rule()
             return
         if not frappe.db.exists("Assignment Rule", assignment_rule):
             # Linked rule was deleted externally — recreate it, don't leave team broken

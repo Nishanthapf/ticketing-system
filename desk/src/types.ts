@@ -259,6 +259,7 @@ export interface Field {
   mandatory_via_depends_on?: string;
   disabled?: boolean;
   placeholder?: string | null;
+  read_only?: 0 | 1;
   readonly?: boolean;
 }
 
