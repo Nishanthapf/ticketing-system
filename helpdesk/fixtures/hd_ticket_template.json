@@ -270,7 +270,7 @@
   "doctype": "HD Ticket Template",
   "name": "Attendance Condonation Under AER",
   "template_name": "Attendance Condonation Under AER",
-  "about": "<p>Your application will be considered at the end of the Trimester only if your attendance in the concerned subject is at least 66%. Only One attachment is permitted — please merge your supporting documents into one document and upload.</p>",
+  "about": "<p><strong>Note:</strong> Your application will be considered at the end of the Trimester only if your attendance in the concerned subject is at least 66%.</p><p>Only One attachment is permitted. Please merge your supporting documents into one document and upload.</p>",
   "description_template": null,
   "fields": [
    {"fieldname": "ticket_type",                  "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
