@@ -141,6 +141,8 @@ class HelpdeskDashboard:
     def get_number_card_data(self):
         return [
             self.get_ticket_count(),
+            self.get_open_ticket_count(),
+            self.get_closed_ticket_count(),
             self.get_sla_fulfilled_count(),
             self.get_avg_first_response_time(),
             self.get_avg_resolution_time(),
@@ -158,6 +160,42 @@ class HelpdeskDashboard:
             "deltaSuffix": "%",
             "negativeIsBetter": True,
             "tooltip": _("Total number of tickets created"),
+        }
+
+    def get_open_ticket_count(self):
+        extra_cond = (
+            self.ticket.status.isin(self.open_statuses)
+            if self.open_statuses
+            else None
+        )
+        current, prev = self.get_metric_data(self.ticket.name, Count, extra_cond)
+        delta = ((current - prev) / prev * 100) if prev else 0
+
+        return {
+            "title": _("Open Tickets"),
+            "value": current,
+            "delta": delta,
+            "deltaSuffix": "%",
+            "negativeIsBetter": True,
+            "tooltip": _("Total number of open tickets in the selected period"),
+        }
+
+    def get_closed_ticket_count(self):
+        extra_cond = (
+            self.ticket.status.isin(self.resolved_statuses)
+            if self.resolved_statuses
+            else None
+        )
+        current, prev = self.get_metric_data(self.ticket.name, Count, extra_cond)
+        delta = ((current - prev) / prev * 100) if prev else 0
+
+        return {
+            "title": _("Closed Tickets"),
+            "value": current,
+            "delta": delta,
+            "deltaSuffix": "%",
+            "negativeIsBetter": False,
+            "tooltip": _("Total number of closed/resolved tickets in the selected period"),
         }
 
     def get_sla_fulfilled_count(self):

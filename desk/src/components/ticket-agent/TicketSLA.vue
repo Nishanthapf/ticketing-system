@@ -4,7 +4,7 @@
     <div
       class="flex items-center ms-5 me-5 md:me-0 text-p-sm gap-3 text-[14px] mb-2"
     >
-      <!-- Source -->
+      <!-- Source
       <div class="flex items-center gap-1">
         <p
           @click="
@@ -27,14 +27,14 @@
           <span>Email</span>
         </div>
         <!-- Via Portal -->
-        <div v-else class="text-ink-gray-5 flex items-center">
+        <!-- <div v-else class="text-ink-gray-5 flex items-center">
           <span class="me-[4px]">via</span>
           <GlobeIcon class="size-4 inline-block me-1" />
           <span>Portal</span>
         </div>
-      </div>
+      </div> -->
       <!-- divider -->
-      <div class="border-s border-outline-gray-2 h-[13px]" />
+      <div class="border-s border-outline-gray-2 h-[13px]" /> -->
       <!-- First Response -->
       <div class="flex items-center gap-1">
         <span>First Response</span>
