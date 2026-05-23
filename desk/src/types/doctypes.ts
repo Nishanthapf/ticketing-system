@@ -137,19 +137,17 @@ export interface HDTicket extends DocType {
   /** Ticket raised outside working hours: Check */
   raised_outside_working_hours: 0 | 1;
   /** First Response Failed By: Duration */
-  first_response_failed_by?: number;
+  first_response_failed_by?: any;
   /** Resolution Failed By: Duration */
   resolution_failed_by?: number;
   /** Assignees: JSON */
   _assign: string;
 }
 
-// Last updated: 2026-03-03 12:30:01.394107
+// Last updated: 2024-03-23 16:01:27.847608
 export interface AssignmentRuleUser extends ChildDocType {
   /** User: Link (User) */
   user: string;
-  /** Weight: Int */
-  weight?: number;
   /** Weight: Int */
   weight?: number;
 }
@@ -167,7 +165,7 @@ export interface AssignmentRuleDay extends ChildDocType {
     | "Sunday";
 }
 
-// Last updated: 2026-03-03 13:08:12.561504
+// Last updated: 2025-08-25 17:09:11.644603
 export interface AssignmentRule extends DocType {
   /** Document Type: Link (DocType) */
   document_type: string;
@@ -199,10 +197,6 @@ export interface AssignmentRule extends DocType {
   due_date_based_on?: any;
   /** Field: Select */
   field?: any;
-  /** Current Index: Int */
-  current_index?: number;
-  /** Users: Table (Assignment Rule User) */
-  weighted_users: AssignmentRuleUser[];
 }
 
 // Last updated: 2021-12-23 19:03:23.507845

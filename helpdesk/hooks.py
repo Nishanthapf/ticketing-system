@@ -26,6 +26,11 @@ after_migrate = [
     "helpdesk.search.build_index_in_background",
     "helpdesk.search.download_corpus",
     "helpdesk.setup.ticket_type_team_mapping.sync_ticket_type_teams",
+    # Ensure HD Ticket Type custom fields (year-wise assignment section + table) exist.
+    # Using create_custom_fields (idempotent) rather than a fixture so that migrate
+    # never tries to delete-and-reinsert an already-existing Custom Field, which
+    # triggers Frappe's meta-cache validation error.
+    "helpdesk.setup.install.ensure_hd_ticket_type_custom_fields",
 ]
 
 
@@ -105,6 +110,11 @@ fixtures = [
         "doctype": "Custom Field",
         "filters": [["name", "like", "HD Ticket-custom_%"]]
     },
+    # NOTE: HD Ticket Type custom fields (year_wise_assignment_section,
+    # year_wise_assignment_rules) are NOT fixtures — they are created idempotently
+    # by ensure_hd_ticket_type_custom_fields() in after_migrate to avoid the
+    # "field already exists" ValidationError that Frappe's fixture delete-reinsert
+    # flow triggers when the field is already in the DB.
     # Clear link_filters on ticket_type, priority, agent_group — prevents
     # JSONDecodeError / PermissionError for portal users (All role has only
     # 'select' on HD Ticket Type, not 'read', so filtering by 'disabled' fails)
