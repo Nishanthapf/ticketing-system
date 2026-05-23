@@ -88,7 +88,7 @@
 
       <!-- Number Cards -->
       <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-4"
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 mb-4"
         v-if="!numberCards.loading"
       >
         <Tooltip
@@ -163,7 +163,7 @@
         <SkeletonLoader
           v-if="numberCards.loading"
           :variants="['number-cards']"
-          :number-cards-count="5"
+          :number-cards-count="7"
           :loading="true"
         />
         <SkeletonLoader

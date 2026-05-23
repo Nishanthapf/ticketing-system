@@ -98,7 +98,8 @@
   "insert_after": "custom_category_section",
   "options": "",
   "depends_on": "eval:['Academics','Facilities','Finance','IT','PACE'].includes(doc.ticket_type)",
-  "name": "HD Ticket-custom_type_of_issue"
+  "name": "HD Ticket-custom_type_of_issue",
+  "reqd": 1
  },
  {
   "doctype": "Custom Field",

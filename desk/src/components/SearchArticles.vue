@@ -46,7 +46,7 @@
       </div>
     </dl>
   </div>
-  <div
+  <!-- <div
     v-else-if="
       !articles.loading && articles.data?.length === 0 && query.length > 2
     "
@@ -59,7 +59,7 @@
         >Rephrase the question and try again with some keywords</span
       >
     </div>
-  </div>
+  </div> -->
   <div
     v-else-if="articles.loading"
     class="flex flex-col items-center justify-center h-[240px] gap-2 rounded border"

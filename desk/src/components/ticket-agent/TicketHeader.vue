@@ -45,20 +45,7 @@
             </Dropdown>
           </div>
         </div>
-        <!-- Status -->
-        <Dropdown :options="statusDropdown" placement="right">
-          <template #default="{ open }">
-            <Button :label="ticket.doc.status" ref="statusRef">
-              <template #prefix>
-                <IndicatorIcon
-                  :class="
-                    ticketStatusStore.getStatus(ticket.doc.status)?.parsed_color
-                  "
-                />
-              </template>
-            </Button>
-          </template>
-        </Dropdown>
+        <!-- Status moved to sidebar -->
         <!-- Core Actions + Custom Actions -->
         <Dropdown
           v-if="groupedActions[0]?.items?.length >= 1"
@@ -145,30 +132,7 @@ const activities = inject(ActivitiesSymbol)!;
 const showSubjectDialog = ref(false);
 
 const { notifyTicketUpdate } = useNotifyTicketUpdate(ticket.value?.name);
-const statusDropdown = computed(() => {
-  const statuses =
-    ticketStatusStore.statuses.data?.filter((s) => s.enabled) || [];
-  return statuses.map((o: HDTicketStatus) => ({
-    label: o.label_agent,
-    value: o.label_agent,
-    onClick: () => {
-      notifyTicketUpdate("Status", o.label_agent);
-      if (ticket.value.doc.status === o.label_agent) return;
-      ticket.value.setValue.submit(
-        { status: o.label_agent },
-        {
-          onSuccess() {
-            activities.value.reload();
-          },
-        }
-      );
-    },
-    icon: () =>
-      h(IndicatorIcon, {
-        class: o.parsed_color,
-      }),
-  }));
-});
+
 const breadcrumbs = computed(() => {
   let items = [{ label: __("Tickets"), route: { name: "TicketsAgent" } }];
   if (route.query.view) {
@@ -354,7 +318,7 @@ const statusRef = useTemplateRef("statusRef");
 
 onMounted(() => {
   useShortcut("s", () => {
-    statusRef.value?.$el?.nextElementSibling?.click();
+    // status button is now in sidebar
   });
 });
 </script>
