@@ -246,6 +246,44 @@ def add_property_setters():
     add_assignment_rule_property_setters()
 
 
+def ensure_hd_ticket_type_custom_fields():
+    """Idempotently create the year-wise assignment section + table fields on HD Ticket Type.
+
+    Using create_custom_fields (which checks existence before inserting) instead of a
+    fixture avoids Frappe's delete-and-reinsert flow, which triggers a meta-cache
+    validation error ("A field with the name X already exists in Y") on every migrate
+    when the field is already present in the database.
+    """
+    create_custom_fields(
+        {
+            "HD Ticket Type": [
+                {
+                    "fieldname": "year_wise_assignment_section",
+                    "fieldtype": "Section Break",
+                    "label": "Year-wise Assignment Rules",
+                    "insert_after": "team",
+                    "is_system_generated": 0,
+                },
+                {
+                    "fieldname": "year_wise_assignment_rules",
+                    "fieldtype": "Table",
+                    "label": "Year-wise Assignment Rules",
+                    "options": "HD Ticket Type Assignment Rule",
+                    "insert_after": "year_wise_assignment_section",
+                    "description": (
+                        "Map each programme + year combination to a specific support team. "
+                        "When a student raises a ticket of this type, the system auto-assigns "
+                        "the matching team."
+                    ),
+                    "is_system_generated": 0,
+                },
+            ]
+        },
+        ignore_validate=False,
+        update=True,
+    )
+
+
 def get_custom_fields():
     """Helpdesk specific custom fields that needs to be added to the Assignment Rule DocType."""
     return {
