@@ -45,6 +45,12 @@ scheduler_events = {
     "hourly_long": [
         "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.update_sla_status_in_ticket"
     ],
+    # Runs every hour — emails the assigned agent for any open ticket whose
+    # SLA has been breached or is at risk and still has no agent reply.
+    # A 12-hour cache key prevents repeat emails for the same ticket.
+    "hourly": [
+        "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.send_sla_breach_reminder"
+    ],
 }
 
 

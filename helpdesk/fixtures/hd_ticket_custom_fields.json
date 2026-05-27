@@ -71,6 +71,7 @@
   "dt": "HD Ticket",
   "fieldname": "custom_current_term",
   "fieldtype": "Data",
+  "display_dipends_on": "eval:doc.custom_current_term != 'PACE'",
   "label": "Section / Term",
   "insert_after": "custom_current_year",
   "read_only": 1,
