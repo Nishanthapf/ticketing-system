@@ -1469,3 +1469,168 @@ def update_sla_status_in_ticket():
             )
             continue
         frappe.db.commit()  # nosemgrep
+
+
+def send_sla_breach_reminder():
+    """
+    Scheduled task (runs hourly) — sends a reminder email to the assigned agent
+    for every open ticket that:
+      • has an SLA attached,
+      • has NOT yet received a first agent reply (first_responded_on is NULL), AND
+      • whose SLA agreement_status is "Failed" (already breached) or "At Risk"
+        (approaching breach within the next hour).
+
+    A cache key prevents the same ticket from triggering more than one email
+    per 12-hour window, so agents aren't flooded.
+    """
+    import os
+    from frappe.utils import now_datetime, get_datetime, format_datetime
+
+    # Find open tickets with an SLA that haven't been responded to yet
+    tickets = frappe.get_all(
+        "HD Ticket",
+        filters={
+            "status_category": "Open",
+            "sla": ["is", "set"],
+            "first_responded_on": ["is", "not set"],
+            "agreement_status": ["in", ["Failed", "At Risk"]],
+        },
+        fields=[
+            "name", "subject", "raised_by", "ticket_type", "priority",
+            "agreement_status", "response_by", "creation",
+            "_assign", "agent_group",
+        ],
+    )
+
+    if not tickets:
+        return
+
+    # Build a clean, browser-accessible site URL.
+    #
+    # • Frappe Cloud / Production:
+    #     frappe.utils.get_url() already returns the correct public HTTPS URL
+    #     (e.g. https://yoursite.frappe.cloud) — use it as-is.
+    #
+    # • Local dev (developer_mode = 1):
+    #     get_url() returns http://slcm.local:8001 (gunicorn port) which browsers
+    #     cannot open directly. We reconstruct the URL using frappe.local.site
+    #     (e.g. "slcm.local") so the link opens on the correct nginx port (80).
+    import re as _re
+    _raw_url       = frappe.utils.get_url().rstrip("/")
+    _developer_mode = frappe.conf.get("developer_mode", 0)
+
+    if _developer_mode:
+        # Strip the internal :PORT — nginx/haproxy handles routing on port 80
+        _site   = getattr(frappe.local, "site", None) or ""
+        _scheme = _raw_url.split("://")[0]            # keep http or https
+        site_url = f"{_scheme}://{_site}" if _site else _re.sub(r":\d+$", "", _raw_url)
+    else:
+        # Production / Frappe Cloud — get_url() is already correct
+        site_url = _raw_url
+
+    template_path = os.path.join(
+        frappe.get_app_path("helpdesk"),
+        "templates", "emails", "sla_breach_reminder.html",
+    )
+    with open(template_path, "r") as f:
+        template_str = f.read()
+
+    for ticket in tickets:
+        # ── Throttle: skip if we already sent a reminder for this ticket
+        #    in the last 12 hours ──────────────────────────────────────
+        cache_key = f"sla_reminder_sent:{ticket.name}"
+        if frappe.cache().get_value(cache_key):
+            continue
+
+        # ── Resolve the assigned agent's email ───────────────────────
+        agent_email = None
+        agent_name  = "Agent"
+
+        if ticket._assign:
+            try:
+                import json as _json
+                assignees = _json.loads(ticket._assign)
+                if assignees:
+                    agent_email = assignees[0]
+                    agent_name  = frappe.db.get_value(
+                        "User", agent_email, "full_name"
+                    ) or agent_email
+            except Exception:
+                pass
+
+        # Fall back to team members if no direct assignee
+        if not agent_email and ticket.agent_group:
+            members = frappe.get_all(
+                "HD Team Member",
+                filters={"parent": ticket.agent_group},
+                pluck="user",
+            )
+            if members:
+                agent_email = members[0]
+                agent_name  = frappe.db.get_value(
+                    "User", agent_email, "full_name"
+                ) or agent_email
+
+        if not agent_email:
+            frappe.log_error(
+                message=f"SLA Reminder: No agent found for ticket {ticket.name}. Skipping.",
+                title="SLA Reminder — No Agent",
+            )
+            continue
+
+        # ── Build template context ────────────────────────────────────
+        is_breached = ticket.agreement_status == "Failed"
+
+        response_deadline = (
+            format_datetime(ticket.response_by, "dd-MM-yyyy hh:mm a")
+            if ticket.response_by
+            else "Not set"
+        )
+        creation_str = (
+            format_datetime(ticket.creation, "dd-MM-yyyy hh:mm a")
+            if ticket.creation
+            else ""
+        )
+
+        ticket_url = f"{site_url}/helpdesk/tickets/{ticket.name}"
+
+        context = {
+            "agent_name":        agent_name,
+            "ticket_name":       ticket.name,
+            "subject":           ticket.subject or "(No Subject)",
+            "raised_by":         ticket.raised_by or "Unknown",
+            "ticket_type":       ticket.ticket_type or "—",
+            "priority":          ticket.priority or "—",
+            "is_breached":       is_breached,
+            "response_deadline": response_deadline,
+            "creation":          creation_str,
+            "ticket_url":        ticket_url,
+        }
+
+        rendered_body = frappe.render_template(template_str, context)
+
+        subject_prefix = "🔴 SLA Breached" if is_breached else "🟡 SLA At Risk"
+        email_subject  = f"{subject_prefix} — Ticket {ticket.name}: {ticket.subject or '(No Subject)'}"
+
+        try:
+            frappe.sendmail(
+                recipients=[agent_email],
+                subject=email_subject,
+                message=rendered_body,
+                now=True,
+            )
+
+            # Mark as sent — expires after 12 hours (43 200 seconds)
+            frappe.cache().set_value(cache_key, 1, expires_in_sec=43200)
+
+            frappe.logger().info(
+                f"SLA reminder sent to {agent_email} for ticket {ticket.name} "
+                f"(status: {ticket.agreement_status})"
+            )
+
+        except Exception as e:
+            frappe.log_error(
+                message=f"Failed to send SLA reminder for ticket {ticket.name} "
+                        f"to {agent_email}. Error: {e}",
+                title="SLA Reminder Email Failed",
+            )
