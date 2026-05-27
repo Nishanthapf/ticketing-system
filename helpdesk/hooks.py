@@ -74,6 +74,7 @@ fixtures = [
             "IT Team", "Academics Team", "Facilities Team", "Finance Team",
             "Food and Beverage Team", "Library Team", "Stores Team",
             "PACE Team", "Grade Team", "Internship Team", "Electives Team",
+            "Travel & Transportation Team",
             "PACE Team - Group A", "PACE Team - Group B",
             "PACE Team - PGDAL", "PACE Team - PGDTXL",
             "AER Condonation - BA LLB (1-3 Year)",
@@ -113,7 +114,8 @@ fixtures = [
             "IT", "Library", "Library Book Request", "Stores Request", "PACE",
             "OOR Intimation", "Electric Appliance Declaration", "Nominations",
             "SBA Committee Application", "Attendance Condonation Under AER",
-            "Grade", "Internship", "Electives", "Roommate Intimation"
+            "Grade", "Internship", "Electives", "Roommate Intimation",
+            "Travel & Transportation"
         ]]]
     },
 ]

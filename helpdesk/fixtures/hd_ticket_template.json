@@ -39,8 +39,25 @@
    {"fieldname": "custom_sba_q2",                "required": 0, "hide_from_customer": 0},
    {"fieldname": "custom_sba_q3",                "required": 0, "hide_from_customer": 0},
    {"fieldname": "custom_sba_other_comments",    "required": 0, "hide_from_customer": 0},
-   {"fieldname": "custom_roommate_1",            "required": 0, "hide_from_customer": 0},
-   {"fieldname": "custom_roommate_2",            "required": 0, "hide_from_customer": 0}
+   {"fieldname": "custom_roommate_1",                "required": 0, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_in_campus_students"},
+   {"fieldname": "custom_roommate_2",                "required": 0, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_in_campus_students"},
+   {"fieldname": "custom_transport_category",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_requestor",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_requestor_email", "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_guest_name",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_guest_email",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_pickup",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_drop",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_trip_date",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_driver",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_car",             "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_start_time",      "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_end_time",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_trip_time",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_start_km",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_end_km",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_extra_charges",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_remarks",         "required": 0, "hide_from_customer": 0}
   ]
  },
  {
@@ -341,13 +358,41 @@
   "description_template": null,
   "fields": [
    {"fieldname": "ticket_type",          "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
-   {"fieldname": "custom_student_id",    "required": 0, "hide_from_customer": 0},
    {"fieldname": "custom_student_name",  "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_student_id",    "required": 0, "hide_from_customer": 0},
    {"fieldname": "custom_programme",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_current_year",  "required": 0, "hide_from_customer": 0},
    {"fieldname": "custom_hostel",        "required": 0, "hide_from_customer": 0},
    {"fieldname": "custom_room_no",       "required": 0, "hide_from_customer": 0},
-   {"fieldname": "custom_roommate_1",    "required": 0, "hide_from_customer": 0},
-   {"fieldname": "custom_roommate_2",    "required": 0, "hide_from_customer": 0}
+   {"fieldname": "custom_roommate_1",    "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_in_campus_students"},
+   {"fieldname": "custom_roommate_2",    "required": 0, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_in_campus_students"}
+  ]
+ },
+ {
+  "doctype": "HD Ticket Template",
+  "name": "Travel & Transportation",
+  "template_name": "Travel & Transportation",
+  "about": "<p><strong>Travel &amp; Transportation Request (2024-25)</strong></p><ul><li>Use this form to request a campus vehicle for official or personal travel.</li><li>Driver and car assignment is subject to availability.</li><li>Trip log fields (KM, time, extra charges) are filled in after the trip is completed.</li></ul>",
+  "description_template": null,
+  "fields": [
+   {"fieldname": "ticket_type",                        "required": 1, "hide_from_customer": 0, "url_method": "helpdesk.api.nls_student.get_ticket_types"},
+   {"fieldname": "custom_transport_category",          "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_requestor",         "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_requestor_email",   "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_guest_name",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_guest_email",       "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_pickup",            "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_drop",              "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_trip_date",         "required": 1, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_driver",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_car",               "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_start_time",        "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_end_time",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_trip_time",         "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_start_km",          "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_end_km",            "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_extra_charges",     "required": 0, "hide_from_customer": 0},
+   {"fieldname": "custom_transport_remarks",           "required": 0, "hide_from_customer": 0}
   ]
  }
 ]
