@@ -3,6 +3,9 @@ import frappe
 
 AUTO_CLOSE_TYPES = {"OOR Intimation", "Electric Appliance Declaration"}
 
+# Ticket type exclusively available to faculty/staff
+FACULTY_ONLY_TYPE = "Travel & Transportation"
+
 # Type of Issue options per ticket type
 ISSUE_OPTIONS = {
 	"Academics": ["Attendance", "Certificates", "Examination", "Letters", "Learning Material", "Projects", "Viva", "Others"],
@@ -45,12 +48,16 @@ def get_ticket_types() -> list:
 	Used by url_method in HD Ticket Template fields — avoids the
 	search_link + disabled-field permission error for portal users.
 
-	If the current user has the PACE Applicant role, only the PACE ticket
-	type is returned so applicants cannot raise tickets of any other category.
+	Role-based filtering:
+	  - PACE Applicant  → PACE ticket type only.
+	  - slcm_Student    → All ticket types EXCEPT "Travel & Transportation"
+	                       (that type is reserved for faculty / staff).
+	  - Everyone else   → All enabled ticket types.
 	"""
 	user_roles = frappe.get_roles(frappe.session.user)
+
+	# PACE Applicants can only raise PACE tickets
 	if "PACE Applicant" in user_roles:
-		# Restrict PACE Applicants to only the PACE ticket type
 		pace_type = frappe.db.get_value(
 			"HD Ticket Type", {"name": "PACE", "disabled": 0}, "name"
 		)
@@ -65,36 +72,89 @@ def get_ticket_types() -> list:
 		order_by="name asc",
 		ignore_permissions=True,
 	)
+
+	# Students cannot raise Travel & Transportation tickets
+	STUDENT_HIDDEN_TYPES = {FACULTY_ONLY_TYPE}
+	if "slcm_Student" in user_roles:
+		types = [t for t in types if t.name not in STUDENT_HIDDEN_TYPES]
+
+	# Faculty can ONLY raise Travel & Transportation tickets
+	if "slcm_Faculty" in user_roles:
+		types = [t for t in types if t.name == FACULTY_ONLY_TYPE]
+
 	return [{"label": t.name, "value": t.name} for t in types]
+
+
+@frappe.whitelist()
+def get_user_role_context() -> dict:
+	"""
+	Returns role-level context flags used by the form script to drive
+	template switching and field visibility.
+
+	  is_faculty → True for slcm_Faculty users.
+	              The form script uses this to redirect to the
+	              'Travel & Transportation' template and pre-fill
+	              the ticket type.
+
+	  is_student → True for slcm_Student and PACE Applicant users.
+	              The form script uses this to show the student
+	              information section.
+	"""
+	user = frappe.session.user
+	if not user or user == "Guest":
+		return {"is_faculty": False, "is_student": False}
+
+	user_roles = frappe.get_roles(user)
+	is_faculty = "slcm_Faculty" in user_roles
+	is_student = "slcm_Student" in user_roles or "PACE Applicant" in user_roles
+
+	return {"is_faculty": is_faculty, "is_student": is_student}
 
 
 @frappe.whitelist()
 def get_student_context() -> dict:
 	"""
-	Returns pre-filled ticket field values for the current portal user.
+	Returns pre-filled ticket field values for the current portal user,
+	plus an `is_student` boolean the form script uses to show/hide the
+	student information section.
 
 	Logic:
-	  1. Guest users → empty dict (no context).
-	  2. PACE Applicant role → fetch details from PACE Application doctype.
-	  3. All other users (Students, staff) → fetch from Student Master.
-
-	Source selection for PACE Applicants:
-	  - Looks up PACE Application by owner (= frappe.session.user) first.
-	  - Falls back to email_address field match in case owner differs.
-	  - Returns the most recently modified application if multiple exist.
+	  1. Guest users              → {is_student: False} (no context).
+	  2. PACE Applicant role      → PACE Application data, is_student = True.
+	  3. slcm_Student role        → Student Master data,  is_student = True.
+	  4. Faculty / staff / others → empty field values,   is_student = False
+	                                (student section is hidden for them).
 	"""
 	user = frappe.session.user
 	if not user or user == "Guest":
-		return {}
+		return {"is_student": False}
 
 	user_roles = frappe.get_roles(user)
 
 	# ── PACE Applicant: pull details from PACE Application ──────────────────
 	if "PACE Applicant" in user_roles:
-		return _get_pace_applicant_context(user)
+		ctx = _get_pace_applicant_context(user)
+		ctx["is_student"] = True
+		return ctx
 
-	# ── Regular student / staff: pull from Student Master ───────────────────
-	return _get_student_master_context(user)
+	# ── Enrolled student: pull from Student Master ───────────────────────────
+	if "slcm_Student" in user_roles:
+		ctx = _get_student_master_context(user)
+		ctx["is_student"] = True
+		return ctx
+
+	# ── Faculty / staff / other roles: no student data ──────────────────────
+	return {
+		"is_student": False,
+		"custom_student_name":   "",
+		"custom_student_id":     "",
+		"custom_programme":      "",
+		"custom_current_year":   "",
+		"custom_current_term":   "",
+		"custom_contact_number": "",
+		"custom_hostel":         "",
+		"custom_room_no":        "",
+	}
 
 
 def _get_pace_applicant_context(user: str) -> dict:
@@ -115,7 +175,6 @@ def _get_pace_applicant_context(user: str) -> dict:
 		PACE_FIELDS,
 		as_dict=True,
 		order_by="modified desc",
-		ignore_permissions=True,
 	)
 
 	# Fallback: email_address field matches login email
@@ -126,7 +185,6 @@ def _get_pace_applicant_context(user: str) -> dict:
 			PACE_FIELDS,
 			as_dict=True,
 			order_by="modified desc",
-			ignore_permissions=True,
 		)
 
 	if not app:
@@ -218,6 +276,110 @@ def _get_student_master_context(user: str) -> dict:
 		"custom_contact_number": student.phone or "",
 		"custom_hostel":         hostel_name,
 		"custom_room_no":        room_no,
+	}
+
+
+@frappe.whitelist()
+def get_in_campus_students() -> list:
+	"""
+	Returns all active in-campus (hosteller) students as Autocomplete options.
+	Used by url_method in the Roommate Intimation template for Roommate 1 and Roommate 2 fields.
+	Excludes the currently logged-in student from the list (you cannot pick yourself as a roommate).
+
+	In-campus students are identified by is_hosteller = 1 on Student Master.
+	Option format: "Full Name (Registration ID)"
+	"""
+	current_user = frappe.session.user
+
+	# Resolve current student's registration_id to exclude from list
+	current_reg_id = frappe.db.get_value(
+		"Student Master", {"user": current_user}, "registration_id"
+	) or frappe.db.get_value(
+		"Student Master", {"email": current_user}, "registration_id"
+	)
+
+	# Fetch all in-campus students (is_hosteller = 1)
+	students = frappe.get_all(
+		"Student Master",
+		filters={"is_hosteller": 1},
+		fields=["first_name", "middle_name", "last_name", "registration_id", "name"],
+		order_by="first_name asc",
+		ignore_permissions=True,
+	)
+
+	options = []
+	for s in students:
+		reg_id = s.registration_id or s.name
+		# Exclude the requesting student
+		if current_reg_id and reg_id == current_reg_id:
+			continue
+		parts = [p for p in [s.first_name, s.middle_name, s.last_name] if p]
+		full_name = " ".join(parts)
+		label = f"{full_name} ({reg_id})" if reg_id else full_name
+		options.append({"label": label, "value": label})
+
+	return options
+
+
+@frappe.whitelist()
+def get_transport_context() -> dict:
+	"""
+	Returns pre-filled Requestor name and email for the Travel & Transportation
+	ticket form, sourced from the Faculty doctype for slcm_Faculty users.
+
+	Lookup order:
+	  1. Faculty doctype  — match user_id == frappe.session.user.
+	     Full name is built from first_name + last_name.
+	     Email comes from the Faculty.email field.
+	  2. Fallback to Frappe User record (full_name + email) — covers cases
+	     where a Faculty row has not yet been created.
+
+	Returns empty dict for Guest users.
+	"""
+	user = frappe.session.user
+	if not user or user == "Guest":
+		return {}
+
+	# ── Primary: look up Faculty record linked to this user account ──────────
+	faculty = frappe.db.get_value(
+		"Faculty",
+		{"user_id": user},
+		["first_name", "last_name", "email"],
+		as_dict=True,
+		ignore_permissions=True,
+	)
+
+	# ── Secondary: match by Faculty.email (covers cases where user_id unset) ─
+	if not faculty:
+		faculty = frappe.db.get_value(
+			"Faculty",
+			{"email": user},
+			["first_name", "last_name", "email"],
+			as_dict=True,
+			ignore_permissions=True,
+		)
+
+	if faculty:
+		parts = [p for p in [faculty.first_name, faculty.last_name] if p]
+		full_name = " ".join(parts)
+		return {
+			"custom_transport_requestor":       full_name,
+			"custom_transport_requestor_email": faculty.email or "",
+		}
+
+	# ── Fallback: use the Frappe User record directly ─────────────────────────
+	user_doc = frappe.db.get_value(
+		"User",
+		user,
+		["full_name", "email"],
+		as_dict=True,
+	)
+	if not user_doc:
+		return {}
+
+	return {
+		"custom_transport_requestor":       user_doc.full_name or "",
+		"custom_transport_requestor_email": user_doc.email or "",
 	}
 
 

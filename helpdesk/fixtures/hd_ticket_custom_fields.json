@@ -7,7 +7,8 @@
   "label": "Student Information",
   "insert_after": "description",
   "collapsible": 0,
-  "name": "HD Ticket-custom_student_section"
+  "name": "HD Ticket-custom_student_section",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -17,7 +18,8 @@
   "label": "Student Name",
   "insert_after": "custom_student_section",
   "read_only": 1,
-  "name": "HD Ticket-custom_student_name"
+  "name": "HD Ticket-custom_student_name",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -29,7 +31,8 @@
   "read_only": 1,
   "in_list_view": 1,
   "in_standard_filter": 1,
-  "name": "HD Ticket-custom_student_id"
+  "name": "HD Ticket-custom_student_id",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -37,7 +40,8 @@
   "fieldname": "custom_col_break_student_1",
   "fieldtype": "Column Break",
   "insert_after": "custom_student_id",
-  "name": "HD Ticket-custom_col_break_student_1"
+  "name": "HD Ticket-custom_col_break_student_1",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -47,7 +51,8 @@
   "label": "Program",
   "insert_after": "custom_col_break_student_1",
   "read_only": 1,
-  "name": "HD Ticket-custom_programme"
+  "name": "HD Ticket-custom_programme",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -58,7 +63,8 @@
   "insert_after": "custom_programme",
   "read_only": 1,
   "in_standard_filter": 1,
-  "name": "HD Ticket-custom_current_year"
+  "name": "HD Ticket-custom_current_year",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -68,7 +74,8 @@
   "label": "Section / Term",
   "insert_after": "custom_current_year",
   "read_only": 1,
-  "name": "HD Ticket-custom_current_term"
+  "name": "HD Ticket-custom_current_term",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -78,7 +85,8 @@
   "label": "Contact Number",
   "insert_after": "custom_current_term",
   "read_only": 1,
-  "name": "HD Ticket-custom_contact_number"
+  "name": "HD Ticket-custom_contact_number",
+  "depends_on": "eval:doc.custom_is_student_user === true"
  },
  {
   "doctype": "Custom Field",
@@ -98,8 +106,8 @@
   "insert_after": "custom_category_section",
   "options": "",
   "depends_on": "eval:['Academics','Facilities','Finance','IT','PACE'].includes(doc.ticket_type)",
-  "name": "HD Ticket-custom_type_of_issue",
-  "reqd": 1
+  "mandatory_depends_on": "eval:['Academics','Facilities','Finance','IT','PACE'].includes(doc.ticket_type)",
+  "name": "HD Ticket-custom_type_of_issue"
  },
  {
   "doctype": "Custom Field",
@@ -467,5 +475,244 @@
   "depends_on": "eval:doc.ticket_type=='Roommate Intimation'",
   "description": "Name of in-campus student (AAD)",
   "name": "HD Ticket-custom_roommate_2"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_section",
+  "fieldtype": "Section Break",
+  "label": "Travel & Transportation Details",
+  "insert_after": "custom_roommate_2",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_category",
+  "fieldtype": "Select",
+  "label": "Category",
+  "insert_after": "custom_transport_section",
+  "options": "\nPersonal\nOfficial",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_category"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_requestor",
+  "fieldtype": "Data",
+  "label": "Requestor",
+  "insert_after": "custom_transport_category",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "description": "Department or Name of the requestor",
+  "name": "HD Ticket-custom_transport_requestor"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_requestor_email",
+  "fieldtype": "Data",
+  "label": "Requestor Email",
+  "insert_after": "custom_transport_requestor",
+  "options": "Email",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_requestor_email"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_col_break_1",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_transport_requestor_email",
+  "name": "HD Ticket-custom_transport_col_break_1"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_guest_name",
+  "fieldtype": "Data",
+  "label": "Guest Name",
+  "insert_after": "custom_transport_col_break_1",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "description": "Optional — for guest pickups",
+  "name": "HD Ticket-custom_transport_guest_name"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_guest_email",
+  "fieldtype": "Data",
+  "label": "Guest Email",
+  "insert_after": "custom_transport_guest_name",
+  "options": "Email",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_guest_email"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_route_section",
+  "fieldtype": "Section Break",
+  "label": "Route & Schedule",
+  "insert_after": "custom_transport_guest_email",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_route_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_pickup",
+  "fieldtype": "Data",
+  "label": "Pickup Point",
+  "insert_after": "custom_transport_route_section",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_pickup"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_drop",
+  "fieldtype": "Data",
+  "label": "Drop Point",
+  "insert_after": "custom_transport_pickup",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_drop"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_trip_date",
+  "fieldtype": "Date",
+  "label": "Trip Date",
+  "insert_after": "custom_transport_drop",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_trip_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_col_break_2",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_transport_trip_date",
+  "name": "HD Ticket-custom_transport_col_break_2"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_driver",
+  "fieldtype": "Select",
+  "label": "Driver Name",
+  "insert_after": "custom_transport_col_break_2",
+  "options": "\nKrishnamurthy\nZabiullah\nChethan M C",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_driver"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_car",
+  "fieldtype": "Select",
+  "label": "Car",
+  "insert_after": "custom_transport_driver",
+  "options": "\nCIAZ (KA-41-MB-9175)\nCIAZ (KA-41-MB-9256)\nETIOS (KA-05-MZ-2092)",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_car"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_log_section",
+  "fieldtype": "Section Break",
+  "label": "Trip Log",
+  "insert_after": "custom_transport_car",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "description": "Filled after trip completion",
+  "name": "HD Ticket-custom_transport_log_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_start_time",
+  "fieldtype": "Datetime",
+  "label": "Start Time",
+  "insert_after": "custom_transport_log_section",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_start_time"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_end_time",
+  "fieldtype": "Datetime",
+  "label": "End Time",
+  "insert_after": "custom_transport_start_time",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_end_time"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_trip_time",
+  "fieldtype": "Data",
+  "label": "Trip Time",
+  "insert_after": "custom_transport_end_time",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "read_only": 1,
+  "description": "Auto-calculated from Start and End Time",
+  "name": "HD Ticket-custom_transport_trip_time"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_col_break_3",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_transport_trip_time",
+  "name": "HD Ticket-custom_transport_col_break_3"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_start_km",
+  "fieldtype": "Float",
+  "label": "Trip Start KM",
+  "insert_after": "custom_transport_col_break_3",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_start_km"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_end_km",
+  "fieldtype": "Float",
+  "label": "Trip End KM",
+  "insert_after": "custom_transport_start_km",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_end_km"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_extra_charges",
+  "fieldtype": "Currency",
+  "label": "Extra Charges",
+  "insert_after": "custom_transport_end_km",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_extra_charges"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transport_remarks",
+  "fieldtype": "Small Text",
+  "label": "Remarks",
+  "insert_after": "custom_transport_extra_charges",
+  "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
+  "name": "HD Ticket-custom_transport_remarks"
  }
 ]

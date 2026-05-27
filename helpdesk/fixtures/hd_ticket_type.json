@@ -124,5 +124,12 @@
   "description": "Roommate preference intimation for hostel room allocation. Does not constitute confirmation of room-mate or room allotment.",
   "disabled": 0,
   "is_system": 0
+ },
+ {
+  "doctype": "HD Ticket Type",
+  "name": "Travel & Transportation",
+  "description": "Request for campus vehicle / driver for official or personal travel — includes trip details, driver and car assignment, and trip log (KM, time, charges).",
+  "disabled": 0,
+  "is_system": 0
  }
 ]
