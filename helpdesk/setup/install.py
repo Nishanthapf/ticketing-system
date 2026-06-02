@@ -45,7 +45,9 @@ def after_install():
 
 
 def add_default_categories_and_articles():
-    category = frappe.db.exists("HD Article Category", DEFAULT_ARTICLE_CATEGORY)
+    category = frappe.db.get_value(
+        "HD Article Category", {"category_name": DEFAULT_ARTICLE_CATEGORY}, "name"
+    )
     if not category:
         category = frappe.get_doc(
             {
