@@ -1,35 +1,50 @@
 [
  {
-  "doctype": "Property Setter",
-  "name": "HD Ticket-ticket_type-link_filters",
+  "default_value": null,
   "doc_type": "HD Ticket",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
   "field_name": "ticket_type",
+  "is_system_generated": 0,
+  "modified": "2026-06-01 12:59:52.529600",
+  "module": null,
+  "name": "HD Ticket-ticket_type-link_filters",
   "property": "link_filters",
   "property_type": "Text",
-  "value": "[]",
-  "doctype_or_field": "DocField",
-  "is_system_generated": 0
+  "row_name": null,
+  "value": "[]"
  },
  {
-  "doctype": "Property Setter",
-  "name": "HD Ticket-priority-link_filters",
+  "default_value": null,
   "doc_type": "HD Ticket",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
   "field_name": "priority",
+  "is_system_generated": 0,
+  "modified": "2026-06-01 12:59:52.535676",
+  "module": null,
+  "name": "HD Ticket-priority-link_filters",
   "property": "link_filters",
   "property_type": "Text",
-  "value": "[]",
-  "doctype_or_field": "DocField",
-  "is_system_generated": 0
+  "row_name": null,
+  "value": "[]"
  },
  {
-  "doctype": "Property Setter",
-  "name": "HD Ticket-agent_group-link_filters",
+  "default_value": null,
   "doc_type": "HD Ticket",
+  "docstatus": 0,
+  "doctype": "Property Setter",
+  "doctype_or_field": "DocField",
   "field_name": "agent_group",
+  "is_system_generated": 0,
+  "modified": "2026-06-01 12:59:52.543847",
+  "module": null,
+  "name": "HD Ticket-agent_group-link_filters",
   "property": "link_filters",
   "property_type": "Text",
-  "value": "[]",
-  "doctype_or_field": "DocField",
-  "is_system_generated": 0
+  "row_name": null,
+  "value": "[]"
  }
 ]
