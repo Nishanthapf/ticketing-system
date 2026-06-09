@@ -233,11 +233,20 @@ def _get_student_master_context(user: str) -> dict:
 		as_dict=True,
 	)
 
-	# Fallback: email field match
+	# Fallback 1: email field match
 	if not student:
 		student = frappe.db.get_value(
 			"Student Master",
 			{"email": user},
+			STUDENT_FIELDS,
+			as_dict=True,
+		)
+
+	# Fallback 2: official_email_id field (used when student logs in with personal email)
+	if not student:
+		student = frappe.db.get_value(
+			"Student Master",
+			{"official_email_id": user},
 			STUDENT_FIELDS,
 			as_dict=True,
 		)
