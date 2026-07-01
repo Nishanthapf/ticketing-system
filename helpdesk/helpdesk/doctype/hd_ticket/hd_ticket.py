@@ -261,22 +261,26 @@ class HDTicket(Document):
         programme = self.get("custom_programme") or ""
         current_year = self.get("custom_current_year") or ""
         if programme:
-            rule = frappe.db.get_value(
+            for assignment_doctype in (
+                "PACE Ticket Type Assignment Rule",
                 "HD Ticket Type Assignment Rule",
-                {
-                    "parent": self.ticket_type,
-                    "parenttype": "HD Ticket Type",
-                    "programme": programme,
-                },
-                ["team", "current_year"],
-                as_dict=True,
-                order_by="idx asc",
-            )
-            if rule and rule.team:
-                # If rule has current_year, it must match; blank means all years
-                if not rule.current_year or rule.current_year == current_year:
-                    self.agent_group = rule.team
-                    return
+            ):
+                rule = frappe.db.get_value(
+                    assignment_doctype,
+                    {
+                        "parent": self.ticket_type,
+                        "parenttype": "HD Ticket Type",
+                        "programme": programme,
+                    },
+                    ["team", "current_year"],
+                    as_dict=True,
+                    order_by="idx asc",
+                )
+                if rule and rule.team:
+                    # If rule has current_year, it must match; blank means all years
+                    if not rule.current_year or rule.current_year == current_year:
+                        self.agent_group = rule.team
+                        return
 
         # Fall back to the flat team on the ticket type
         team = frappe.db.get_value("HD Ticket Type", self.ticket_type, "team")
