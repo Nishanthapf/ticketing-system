@@ -99,16 +99,26 @@ def get_user_role_context() -> dict:
 	  is_student → True for slcm_Student and PACE Applicant users.
 	              The form script uses this to show the student
 	              information section.
+
+	  is_enrolled_student → True for slcm_Student only.
+	              The form script uses this to show fields that only
+	              apply to enrolled students (e.g. Year, Section/Term),
+	              which PACE Applicants don't have yet.
 	"""
 	user = frappe.session.user
 	if not user or user == "Guest":
-		return {"is_faculty": False, "is_student": False}
+		return {"is_faculty": False, "is_student": False, "is_enrolled_student": False}
 
 	user_roles = frappe.get_roles(user)
 	is_faculty = "slcm_Faculty" in user_roles
-	is_student = "slcm_Student" in user_roles or "PACE Applicant" in user_roles
+	is_enrolled_student = "slcm_Student" in user_roles
+	is_student = is_enrolled_student or "PACE Applicant" in user_roles
 
-	return {"is_faculty": is_faculty, "is_student": is_student}
+	return {
+		"is_faculty": is_faculty,
+		"is_student": is_student,
+		"is_enrolled_student": is_enrolled_student,
+	}
 
 
 @frappe.whitelist()

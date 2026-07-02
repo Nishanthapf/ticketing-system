@@ -64,7 +64,7 @@
   "read_only": 1,
   "in_standard_filter": 1,
   "name": "HD Ticket-custom_current_year",
-  "depends_on": "eval:doc.custom_is_student_user === true"
+  "depends_on": "eval:doc.custom_is_enrolled_student === true"
  },
  {
   "doctype": "Custom Field",
@@ -76,7 +76,7 @@
   "insert_after": "custom_current_year",
   "read_only": 1,
   "name": "HD Ticket-custom_current_term",
-  "depends_on": "eval:doc.custom_is_student_user === true"
+  "depends_on": "eval:doc.custom_is_enrolled_student === true"
  },
  {
   "doctype": "Custom Field",
