@@ -95,6 +95,7 @@ fixtures = [
             "Travel & Transportation Team",
             "PACE Team - Group A", "PACE Team - Group B",
             "PACE Team - PGDAL", "PACE Team - PGDTXL",
+            "PACE Team - Hellen", "PACE Team - Pratibha",
             "AER Condonation - BA LLB (1-3 Year)",
             "AER Condonation - BA LLB (4-5 Year)",
             "AER Condonation - MPP and LLM",
