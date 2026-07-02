@@ -41,3 +41,4 @@ helpdesk.helpdesk.doctype.hd_ticket.patches.backfill_sla_failed_by
 helpdesk.patches.rename_and_update_std_views #v2
 helpdesk.patches.set_hd_ticket_naming_series
 helpdesk.patches.cleanup_duplicate_assignment_rules
+helpdesk.patches.create_nls_ticket_types_if_missing

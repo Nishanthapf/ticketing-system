@@ -70,9 +70,12 @@ user_invitation = {
 }
 
 fixtures = [
-    # HD Ticket Type rows are seeded via hd_ticket_type.json on fresh install only.
-    # They are intentionally NOT listed here so that migrate never overwrites
-    # admin-managed child table data (year_wise_assignment_rules).
+    # HD Ticket Type rows are seeded in code (setup/ticket_type.py, create-if-
+    # missing) via after_install and the create_nls_ticket_types_if_missing
+    # patch — NOT as a fixture. Fixture import force-overwrites the whole doc
+    # on every migrate regardless of this hooks.fixtures list, which was
+    # wiping admin-managed child table data (year_wise_assignment_rules,
+    # pace_year_wise_assignment_rules).
     # Department teams — new PACE sub-teams included so they exist on fresh install
     {
         "doctype": "HD Team",
