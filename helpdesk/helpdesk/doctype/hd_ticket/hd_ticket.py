@@ -257,6 +257,23 @@ class HDTicket(Document):
         if self.agent_group or not self.ticket_type:
             return
 
+        # Check Type of Issue rules first — e.g. PACE + "Technical Issues" always
+        # routes to a fixed team regardless of the student's programme/year.
+        type_of_issue = self.get("custom_type_of_issue") or ""
+        if type_of_issue:
+            team = frappe.db.get_value(
+                "HD Ticket Type Of Issue Assignment Rule",
+                {
+                    "parent": self.ticket_type,
+                    "parenttype": "HD Ticket Type",
+                    "type_of_issue": type_of_issue,
+                },
+                "team",
+            )
+            if team:
+                self.agent_group = team
+                return
+
         # Check programme/year-wise rules first (e.g. PACE)
         programme = self.get("custom_programme") or ""
         current_year = self.get("custom_current_year") or ""
