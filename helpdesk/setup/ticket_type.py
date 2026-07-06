@@ -30,6 +30,7 @@ NLS_TICKET_TYPES = {
     "Electives": "Issues related to elective course selection or matters.",
     "Roommate Intimation": "Roommate preference intimation for hostel room allocation. Does not constitute confirmation of room-mate or room allotment.",
     "Travel & Transportation": "Request for campus vehicle / driver for official or personal travel — includes trip details, driver and car assignment, and trip log (KM, time, charges).",
+    "Technical Issue": "Technical issues for PACE applicants — e.g. login, portal access, or application form problems.",
 }
 
 

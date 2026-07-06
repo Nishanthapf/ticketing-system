@@ -18,6 +18,9 @@
   "cb00",
   "ticket_type",
   "agent_group",
+  "escalation_count",
+  "last_escalated_on",
+  "escalated_from_agents",
   "summary",
   "sb_details",
   "description",
@@ -134,6 +137,39 @@
    "label": "Team",
    "link_filters": "[[\"HD Team\",\"disabled\",\"=\",0]]",
    "options": "HD Team"
+  },
+  {
+   "default": "0",
+   "fieldname": "escalation_count",
+   "fieldtype": "Int",
+   "hidden": 1,
+   "label": "Escalation Count",
+   "no_copy": 1,
+   "non_negative": 1,
+   "print_hide": 1,
+   "read_only": 1,
+   "report_hide": 1
+  },
+  {
+   "fieldname": "last_escalated_on",
+   "fieldtype": "Datetime",
+   "hidden": 1,
+   "label": "Last Escalated On",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1,
+   "report_hide": 1
+  },
+  {
+   "description": "Internal \u2014 comma separated list of users this ticket has already been escalated away from, used to avoid re-escalating to the same agent.",
+   "fieldname": "escalated_from_agents",
+   "fieldtype": "Small Text",
+   "hidden": 1,
+   "label": "Escalated From Agents",
+   "no_copy": 1,
+   "print_hide": 1,
+   "read_only": 1,
+   "report_hide": 1
   },
   {
    "fieldname": "ticket_split_from",

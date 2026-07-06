@@ -88,24 +88,13 @@ fixtures = [
     # on every migrate regardless of this hooks.fixtures list, which was
     # wiping admin-managed child table data (year_wise_assignment_rules,
     # pace_year_wise_assignment_rules).
-    # Department teams — new PACE sub-teams included so they exist on fresh install
-    {
-        "doctype": "HD Team",
-        "filters": [["name", "in", [
-            "IT Team", "Academics Team", "Facilities Team", "Finance Team",
-            "Food and Beverage Team", "Library Team", "Stores Team",
-            "PACE Team", "Grade Team", "Internship Team", "Electives Team",
-            "Travel & Transportation Team",
-            "PACE Team - Group A", "PACE Team - Group B",
-            "PACE Team - PGDAL", "PACE Team - PGDTXL",
-            "PACE Team - Hellen", "PACE Team - Pratibha",
-            "AER Condonation - BA LLB (1-3 Year)",
-            "AER Condonation - BA LLB (4-5 Year)",
-            "AER Condonation - MPP and LLM",
-            "AER Condonation - LLB Hons",
-            "AER Condonation - PhD"
-        ]]]
-    },
+    # Department teams (HD Team) are seeded in code (setup/team.py, create-if-
+    # missing) via after_install and the create_ootb_teams_if_missing patch —
+    # NOT as a fixture. Fixture import force-overwrites the whole doc on every
+    # migrate regardless of this hooks.fixtures list, which was wiping
+    # admin-managed SLA escalation config (enable_sla_escalation,
+    # escalation_after_hours, escalation_max_hops, escalation_users,
+    # escalation_email_template_*) on every Frappe Cloud build.
     # Student auto-populate + dynamic Type of Issue form script
     {
         "doctype": "HD Form Script",

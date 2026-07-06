@@ -9,6 +9,7 @@ from helpdesk.setup.default_views import add_default_views
 
 from .default_template import create_default_template
 from .file import create_helpdesk_folder
+from .team import create_ootb_teams
 from .ticket_feedback import create_ticket_feedback_options
 from .ticket_type import (
     create_fallback_ticket_type,
@@ -26,6 +27,7 @@ def after_install():
     add_default_ticket_priorities()
     add_default_sla()
     add_default_agent_groups()
+    create_ootb_teams()
     update_agent_role_permissions()
     add_agent_manager_permissions()
     setup_customer_role()

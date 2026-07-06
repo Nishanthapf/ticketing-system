@@ -20,6 +20,15 @@ ASSIGNMENT_DAYS = [
 
 
 class HDTeam(Document):
+    def validate(self):
+        self.validate_sla_escalation()
+
+    def validate_sla_escalation(self):
+        if not self.enable_sla_escalation:
+            return
+        if frappe.utils.flt(self.escalation_after_hours) <= 0:
+            frappe.throw(frappe._("Set Escalate After (hours) to a value greater than 0."))
+
     def after_insert(self):
         # Guard: don't create a duplicate rule if one already exists for this team.
         # This can happen during bench migrate / fixture re-import.

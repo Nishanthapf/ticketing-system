@@ -49,21 +49,23 @@ def get_ticket_types() -> list:
 	search_link + disabled-field permission error for portal users.
 
 	Role-based filtering:
-	  - PACE Applicant  → PACE ticket type only.
+	  - PACE Applicant  → PACE and Technical Issue ticket types only.
 	  - slcm_Student    → All ticket types EXCEPT "Travel & Transportation"
 	                       (that type is reserved for faculty / staff).
 	  - Everyone else   → All enabled ticket types.
 	"""
 	user_roles = frappe.get_roles(frappe.session.user)
 
-	# PACE Applicants can only raise PACE tickets
+	# PACE Applicants can only raise PACE or Technical Issue tickets
 	if "PACE Applicant" in user_roles:
-		pace_type = frappe.db.get_value(
-			"HD Ticket Type", {"name": "PACE", "disabled": 0}, "name"
+		allowed = frappe.get_all(
+			"HD Ticket Type",
+			filters={"name": ["in", ["PACE", "Technical Issue"]], "disabled": 0},
+			fields=["name"],
+			order_by="name asc",
+			ignore_permissions=True,
 		)
-		if pace_type:
-			return [{"label": pace_type, "value": pace_type}]
-		return []
+		return [{"label": t.name, "value": t.name} for t in allowed]
 
 	types = frappe.get_all(
 		"HD Ticket Type",

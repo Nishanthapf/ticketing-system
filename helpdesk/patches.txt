@@ -48,3 +48,4 @@ helpdesk.patches.add_user_invitation_perms
 helpdesk.patches.enable_auto_set_customer_from_contact
 helpdesk.patches.cleanup_duplicate_assignment_rules
 helpdesk.patches.create_nls_ticket_types_if_missing
+helpdesk.patches.create_ootb_teams_if_missing

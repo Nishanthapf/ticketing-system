@@ -13,6 +13,7 @@ TICKET_TYPE_TEAM_MAP = {
     "Library Book Request": "Library Team",
     "PACE": "PACE Team",
     "Stores Request": "Stores Team",
+    "Technical Issue": "PACE Team",
 }
 
 

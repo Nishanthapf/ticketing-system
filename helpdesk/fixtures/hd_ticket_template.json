@@ -950,6 +950,52 @@
   "template_name": "PACE"
  },
  {
+  "about": null,
+  "description_template": null,
+  "docstatus": 0,
+  "doctype": "HD Ticket Template",
+  "fields": [
+   {
+    "fieldname": "ticket_type",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": "helpdesk.api.nls_student.get_ticket_types"
+   },
+   {
+    "fieldname": "custom_student_id",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_student_name",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_programme",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_contact_number",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   }
+  ],
+  "modified": "2026-06-01 12:59:52.324044",
+  "name": "Technical Issue",
+  "template_name": "Technical Issue"
+ },
+ {
   "about": "<p>No approval required. Ticket will be automatically closed on submission.</p>",
   "description_template": null,
   "docstatus": 0,
