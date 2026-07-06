@@ -14,6 +14,7 @@
   "status",
   "priority",
   "status_category",
+  "test",
   "cb00",
   "ticket_type",
   "agent_group",
@@ -481,13 +482,18 @@
    "fieldtype": "Duration",
    "label": "Resolution Failed By",
    "read_only": 1
+  },
+  {
+   "fieldname": "test",
+   "fieldtype": "Data",
+   "label": "Test"
   }
  ],
  "grid_page_length": 50,
  "icon": "fa fa-issue",
  "idx": 61,
  "links": [],
- "modified": "2026-05-11 18:25:54.352721",
+ "modified": "2026-07-06 09:48:57.533152",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Ticket",
