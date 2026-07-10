@@ -16,7 +16,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Programme",
-   "options": "Program"
+   "options": "Programme"
   },
   {
    "fieldname": "current_year",
