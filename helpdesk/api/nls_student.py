@@ -169,6 +169,28 @@ def get_student_context() -> dict:
 	}
 
 
+def resolve_programme_context(identifier: str) -> dict:
+	"""
+	Server-side fallback to resolve custom_programme/custom_current_year for a
+	ticket when the form script hasn't already set them (e.g. tickets created
+	via inbound email, where there is no browser session to run client JS).
+
+	Tries Student Master first (enrolled students have a current_year),
+	falling back to PACE Application (applicants, no current_year).
+	`identifier` is typically the ticket's raised_by email, but a Frappe user
+	name works too since Student Master/PACE Application lookups match by
+	user or email fields either way.
+	"""
+	if not identifier:
+		return {}
+
+	ctx = _get_student_master_context(identifier)
+	if ctx:
+		return ctx
+
+	return _get_pace_applicant_context(identifier)
+
+
 def _get_pace_applicant_context(user: str) -> dict:
 	"""
 	Fetch ticket pre-fill data from PACE Application for a PACE Applicant user.

@@ -76,8 +76,8 @@ class HDTicket(Document):
     def before_validate(self):
         self.check_update_perms()
         self.set_ticket_type()
-        self.set_team_from_ticket_type()
         self.set_raised_by()
+        self.set_team_from_ticket_type()
         self.set_priority()
         self.set_first_responded_on()
         self.set_feedback_values()
@@ -277,6 +277,23 @@ class HDTicket(Document):
         # Check programme/year-wise rules first (e.g. PACE)
         programme = self.get("custom_programme") or ""
         current_year = self.get("custom_current_year") or ""
+
+        # Tickets with no client-side form script (e.g. created from inbound
+        # email) never get custom_programme/custom_current_year set. Resolve
+        # them server-side from Student Master / PACE Application so such
+        # tickets still route through the Programme/Year-wise rules instead
+        # of falling through to the ticket type's flat team.
+        if not programme and self.raised_by:
+            from helpdesk.api.nls_student import resolve_programme_context
+
+            ctx = resolve_programme_context(self.raised_by)
+            programme = ctx.get("custom_programme") or ""
+            current_year = ctx.get("custom_current_year") or current_year
+            if programme:
+                self.custom_programme = programme
+            if current_year:
+                self.custom_current_year = current_year
+
         if programme:
             for assignment_doctype in (
                 "PACE Ticket Type Assignment Rule",
