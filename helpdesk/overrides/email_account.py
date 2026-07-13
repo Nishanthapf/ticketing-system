@@ -16,6 +16,22 @@ BOUNCE_SENDER_PATTERN = re.compile(
 )
 
 
+def is_known_user(email_address: str) -> bool:
+    """Return True if email_address belongs to a registered Frappe User.
+
+    Used to decide whether an inbound email that would otherwise start a
+    brand-new HD Ticket is allowed to: only people who have registered on
+    the site (students, PACE applicants, staff, etc. all get a User record
+    on signup) can raise tickets by email. A stranger emailing in before
+    ever registering should not create a ticket.
+    """
+    if not email_address:
+        return False
+    return bool(
+        frappe.db.exists("User", {"name": email_address, "enabled": 1})
+    )
+
+
 def is_bounce_notification(msg) -> bool:
     """
     Detect delivery-failure / NDR emails (e.g. "Delivery Status Notification
@@ -167,6 +183,24 @@ class CustomEmailAccount(EmailAccount):
                             seen_status,
                             append_to,
                         )
+
+                        # Only registered users (students, PACE applicants,
+                        # staff, etc. all get a User record on signup) may
+                        # raise a brand-new ticket by email. Someone who has
+                        # never registered emailing in for the first time is
+                        # not turned into a ticket. Replies to an existing
+                        # thread are unaffected, since a thread only exists
+                        # if a ticket was already legitimately created.
+                        # We check parent_communication() rather than trusting
+                        # is_reply()/In-Reply-To alone, since that header is
+                        # attacker-controlled and would otherwise let an
+                        # unregistered sender forge their way past the gate.
+                        is_genuine_reply = bool(_inbound_mail.parent_communication())
+                        if not is_genuine_reply and not is_known_user(
+                            _inbound_mail.from_email
+                        ):
+                            continue
+
                         mails.append(_inbound_mail)
                 except Exception as e:
                     # Log the error but continue processing other emails
