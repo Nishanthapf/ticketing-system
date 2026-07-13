@@ -934,7 +934,7 @@ class HDTicket(Document):
             unique_views=True, force=True
         )  # Document class method, no way to add unique_views via document settings, hence used force and unique_views=True
         self.add_seen()
-        clear_notifications(ticket=self.name)
+        clear_notifications(ticket=str(self.name))
 
     def set_sla(self):
         """
