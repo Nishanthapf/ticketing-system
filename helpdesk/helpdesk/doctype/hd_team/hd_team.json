@@ -23,6 +23,7 @@
   "escalation_email_template_new_agent",
   "escalation_email_template_previous_agent",
   "column_break_esc2",
+  "notify_on_max_hops",
   "escalation_email_template_max_hops"
  ],
  "fields": [
@@ -137,7 +138,15 @@
    "fieldtype": "Column Break"
   },
   {
-   "description": "Sent to the team when Max Escalation Hops is reached and no agent has responded. Leave blank to use the system default.",
+   "default": "0",
+   "description": "If enabled, the ticket's assignees are emailed when Max Escalation Hops is reached and no agent has responded. Leave unchecked to only log the event on the ticket's Activity tab, with no email sent.",
+   "fieldname": "notify_on_max_hops",
+   "fieldtype": "Check",
+   "label": "Send Max Hops Reached Email"
+  },
+  {
+   "depends_on": "eval:doc.notify_on_max_hops",
+   "description": "Sent to the ticket's assignees when Max Escalation Hops is reached and no agent has responded. Leave blank to use the system default.",
    "fieldname": "escalation_email_template_max_hops",
    "fieldtype": "Link",
    "label": "Email on Max Hops Reached",
