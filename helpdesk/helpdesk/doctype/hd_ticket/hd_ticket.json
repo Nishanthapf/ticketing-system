@@ -129,7 +129,8 @@
    "fieldtype": "Link",
    "label": "Ticket Type",
    "link_filters": "[[\"HD Ticket Type\",\"disabled\",\"=\",0]]",
-   "options": "HD Ticket Type"
+   "options": "HD Ticket Type",
+   "reqd": 1
   },
   {
    "fieldname": "agent_group",
