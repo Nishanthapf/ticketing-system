@@ -9,6 +9,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import append_number_if_name_exists
 from frappe.realtime import get_website_room
+from frappe.utils import cint
 from frappe.utils.jinja import validate_template
 
 from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import (
@@ -20,6 +21,7 @@ from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import (
 class HDSettings(Document):
     def validate(self):
         self.validate_auto_close_days()
+        self.validate_auto_close_resolved_after()
         self.validate_email_contents()
         self.validate_send_feedback_when_ticket_closed()
 
@@ -27,6 +29,14 @@ class HDSettings(Document):
         if self.auto_close_tickets and self.auto_close_after_days <= 0:
             frappe.throw(
                 _("Day count for auto closing tickets cannot be negative or zero")
+            )
+
+    def validate_auto_close_resolved_after(self):
+        if self.enable_auto_close_resolved_tickets and cint(
+            self.auto_close_resolved_after
+        ) <= 0:
+            frappe.throw(
+                _("Auto Close After duration must be greater than zero")
             )
 
     def validate_send_feedback_when_ticket_closed(self):

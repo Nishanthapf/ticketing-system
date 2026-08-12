@@ -13,7 +13,7 @@ from frappe.desk.form.assign_to import get as get_assignees
 from frappe.model.document import Document
 from frappe.permissions import add_permission, update_permission_property
 from frappe.query_builder import DocType, Order
-from frappe.utils import add_to_date, cint, getdate, now_datetime
+from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
 from pypika.functions import Count
 from pypika.queries import Query
 from pypika.terms import Criterion
@@ -96,6 +96,7 @@ class HDTicket(Document):
         if not self.is_new():
             self.handle_ticket_activity_update()
 
+        self.set_resolved_on()
         self.handle_email_feedback()
 
         if self.is_new():
@@ -1004,6 +1005,19 @@ class HDTicket(Document):
             "category",
         )
 
+    def set_resolved_on(self):
+        """
+        Stamps `resolved_on` whenever the ticket enters the Resolved category, and
+        clears it as soon as it leaves. This powers auto-close of resolved tickets
+        (see `auto_close_resolved_tickets`) independent of whether an SLA is set,
+        and naturally restarts/cancels the countdown on Resolved -> Open -> Resolved.
+        """
+        if self.is_new() or not self.has_value_changed("status_category"):
+            return
+        self.resolved_on = (
+            frappe.utils.now_datetime() if self.status_category == "Resolved" else None
+        )
+
     def get_merge_target(self):
         # Follow the chain of merged tickets to the final, non-merged ticket. Return None
         # if the chain dead-ends on a missing ticket or loops back on itself (a corrupt
@@ -1517,6 +1531,70 @@ def close_tickets_after_n_days():
         frappe.db.commit()  # nosemgrep
 
 
+def auto_close_resolved_tickets():
+    """
+    Scheduled task (runs hourly) — closes tickets that have been sitting in a
+    Resolved status for longer than the configured `auto_close_resolved_after`
+    duration (HD Settings -> Ticket Settings). The timer is `resolved_on`, which
+    is stamped/cleared purely by status-category transitions (see
+    `HDTicket.set_resolved_on`), so a ticket reopened before the deadline is
+    naturally excluded, and a fresh Resolved transition restarts the countdown.
+    """
+    settings = frappe.get_cached_doc("HD Settings")
+    if not settings.enable_auto_close_resolved_tickets:
+        return
+
+    duration_seconds = cint(settings.auto_close_resolved_after) or 86400
+    cutoff = add_to_date(now_datetime(), seconds=-duration_seconds)
+
+    closed_status = frappe.db.get_value(
+        "HD Ticket Status", {"category": "Closed"}, "name"
+    )
+    if not closed_status:
+        frappe.log_error(
+            title="Auto Close Resolved Tickets",
+            message="No HD Ticket Status with category 'Closed' found. Skipping run.",
+        )
+        return
+
+    candidate_tickets = frappe.get_all(
+        "HD Ticket",
+        filters={
+            "status_category": "Resolved",
+            "resolved_on": ["<=", cutoff],
+        },
+        pluck="name",
+    )
+
+    for name in candidate_tickets:
+        doc = frappe.get_doc("HD Ticket", name)
+
+        # Re-check against current state: the ticket may have been reopened (or
+        # already closed) between the query above and this fetch.
+        if doc.status_category != "Resolved" or not doc.resolved_on:
+            continue
+        if get_datetime(doc.resolved_on) > cutoff:
+            continue
+
+        doc.status = closed_status
+        doc.flags.ignore_validate = True
+        try:
+            doc.save(ignore_permissions=True)
+            log_ticket_activity(
+                doc.name,
+                f"automatically closed the ticket after being resolved for "
+                f"{duration_seconds // 3600} hour(s)",
+            )
+        except Exception as e:
+            frappe.log_error(
+                message=f"Failed to auto-close resolved ticket {doc.name}. Error: {e}",
+                title="Auto Close Resolved Ticket Failed",
+            )
+            continue
+
+        frappe.db.commit()  # nosemgrep
+
+
 def update_sla_status_in_ticket():
     stale_tickets = frappe.get_all(
         "HD Ticket",
@@ -1559,7 +1637,12 @@ def send_sla_breach_reminder():
 
     A cache key prevents the same ticket from triggering more than one email
     per 12-hour window, so agents aren't flooded.
+
+    Gated by HD Settings -> Ticket Settings -> Enable SLA Breach Reminder.
     """
+    if not frappe.db.get_single_value("HD Settings", "enable_sla_breach_reminder"):
+        return
+
     import os
     from frappe.utils import now_datetime, get_datetime, format_datetime
 
@@ -1605,12 +1688,49 @@ def send_sla_breach_reminder():
         # Production / Frappe Cloud — get_url() is already correct
         site_url = _raw_url
 
-    template_path = os.path.join(
-        frappe.get_app_path("helpdesk"),
-        "templates", "emails", "sla_breach_reminder.html",
+    # Resolve the configured Email Template once per run (not per ticket) — if
+    # none is set, or the configured one was deleted/renamed since, fall back
+    # to the built-in static template so the job never breaks silently.
+    email_template_name = frappe.db.get_single_value(
+        "HD Settings", "sla_breach_reminder_template"
     )
-    with open(template_path, "r") as f:
-        template_str = f.read()
+    email_template = None
+    if email_template_name:
+        if frappe.db.exists("Email Template", email_template_name):
+            candidate = frappe.get_doc("Email Template", email_template_name)
+            # `enabled` may be a site-specific Custom Field (not part of stock
+            # Frappe's Email Template) — only honor it if present, and only
+            # treat it as a block when explicitly disabled (falsy default of
+            # "field absent" must not be mistaken for "disabled").
+            if candidate.get("enabled") == 0:
+                frappe.log_error(
+                    message=(
+                        f"HD Settings -> SLA Breach Reminder Email Template "
+                        f"'{email_template_name}' is disabled. Falling back to "
+                        f"the default template."
+                    ),
+                    title="SLA Reminder — Disabled Email Template",
+                )
+            else:
+                email_template = candidate
+        else:
+            frappe.log_error(
+                message=(
+                    f"HD Settings -> SLA Breach Reminder Email Template "
+                    f"'{email_template_name}' no longer exists. Falling back to "
+                    f"the default template."
+                ),
+                title="SLA Reminder — Missing Email Template",
+            )
+
+    default_template_str = None
+    if not email_template:
+        template_path = os.path.join(
+            frappe.get_app_path("helpdesk"),
+            "templates", "emails", "sla_breach_reminder.html",
+        )
+        with open(template_path, "r") as f:
+            default_template_str = f.read()
 
     for ticket in tickets:
         # ── Throttle: skip if we already sent a reminder for this ticket
@@ -1684,10 +1804,17 @@ def send_sla_breach_reminder():
             "ticket_url":        ticket_url,
         }
 
-        rendered_body = frappe.render_template(template_str, context)
-
-        subject_prefix = "🔴 SLA Breached" if is_breached else "🟡 SLA At Risk"
-        email_subject  = f"{subject_prefix} — Ticket {ticket.name}: {ticket.subject or '(No Subject)'}"
+        if email_template:
+            formatted = email_template.get_formatted_email(context)
+            email_subject = formatted["subject"]
+            rendered_body = formatted["message"]
+        else:
+            rendered_body = frappe.render_template(default_template_str, context)
+            subject_prefix = "🔴 SLA Breached" if is_breached else "🟡 SLA At Risk"
+            email_subject = (
+                f"{subject_prefix} — Ticket {ticket.name}: "
+                f"{ticket.subject or '(No Subject)'}"
+            )
 
         try:
             frappe.sendmail(

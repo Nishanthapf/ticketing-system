@@ -49,7 +49,12 @@ scheduler_events = {
     # SLA has been breached or is at risk and still has no agent reply.
     # A 12-hour cache key prevents repeat emails for the same ticket.
     "hourly": [
-        "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.send_sla_breach_reminder"
+        "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.send_sla_breach_reminder",
+        # Closes tickets that have been Resolved for longer than the duration
+        # configured in HD Settings -> Ticket Settings. Hourly (not daily) so a
+        # short configured duration (e.g. 6h) still closes within an hour of it
+        # elapsing.
+        "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.auto_close_resolved_tickets",
     ],
 }
 

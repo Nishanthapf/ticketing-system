@@ -80,7 +80,16 @@
   "reply_email_to_agent_content",
   "reply_from_agent_section",
   "enable_reply_email_via_agent",
-  "reply_via_agent_email_content"
+  "reply_via_agent_email_content",
+  "ticket_settings_tab",
+  "auto_close_resolved_section",
+  "enable_auto_close_resolved_tickets",
+  "column_break_acrt",
+  "auto_close_resolved_after",
+  "sla_breach_reminder_section",
+  "enable_sla_breach_reminder",
+  "column_break_sbrt",
+  "sla_breach_reminder_template"
  ],
  "fields": [
   {
@@ -519,6 +528,60 @@
    "fieldname": "auto_set_customer_from_contact",
    "fieldtype": "Check",
    "label": "Auto-set customer from contact"
+  },
+  {
+   "fieldname": "ticket_settings_tab",
+   "fieldtype": "Tab Break",
+   "label": "Ticket Settings"
+  },
+  {
+   "fieldname": "auto_close_resolved_section",
+   "fieldtype": "Section Break",
+   "label": "Auto Close Resolved Tickets"
+  },
+  {
+   "default": "1",
+   "description": "When enabled, a ticket will automatically move to the Closed status after it has remained in a Resolved status for the configured duration.",
+   "fieldname": "enable_auto_close_resolved_tickets",
+   "fieldtype": "Check",
+   "label": "Enable Auto Close Resolved Tickets"
+  },
+  {
+   "fieldname": "column_break_acrt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "86400",
+   "depends_on": "eval:doc.enable_auto_close_resolved_tickets",
+   "description": "Time to wait after a ticket is marked Resolved before it is automatically closed.",
+   "fieldname": "auto_close_resolved_after",
+   "fieldtype": "Duration",
+   "label": "Auto Close After",
+   "mandatory_depends_on": "eval:doc.enable_auto_close_resolved_tickets"
+  },
+  {
+   "fieldname": "sla_breach_reminder_section",
+   "fieldtype": "Section Break",
+   "label": "SLA Breach Reminder"
+  },
+  {
+   "default": "1",
+   "description": "When enabled, an hourly reminder email is sent to the assigned agent for open tickets with an SLA that have breached, or are at risk of breaching, their first response time.",
+   "fieldname": "enable_sla_breach_reminder",
+   "fieldtype": "Check",
+   "label": "Enable SLA Breach Reminder"
+  },
+  {
+   "fieldname": "column_break_sbrt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.enable_sla_breach_reminder",
+   "description": "Email Template used for the SLA breach reminder sent to agents. Available variables: agent_name, ticket_name, subject, raised_by, ticket_type, priority, is_breached, response_deadline, creation, ticket_url. Leave blank to use the default built-in template.",
+   "fieldname": "sla_breach_reminder_template",
+   "fieldtype": "Link",
+   "label": "SLA Breach Reminder Email Template",
+   "options": "Email Template"
   }
  ],
  "grid_page_length": 50,
