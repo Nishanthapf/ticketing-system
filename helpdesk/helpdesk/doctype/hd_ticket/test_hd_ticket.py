@@ -13,6 +13,7 @@ from helpdesk.helpdesk.doctype.hd_ticket.api import (
     show_outside_hours_banner,
     split_ticket,
 )
+from helpdesk.helpdesk.doctype.hd_ticket.escalation import process_ticket_escalations
 from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import close_tickets_after_n_days
 from helpdesk.test_utils import (
     add_comment,
@@ -23,7 +24,9 @@ from helpdesk.test_utils import (
     get_current_week_monday,
     get_latest_ticket_communication,
     get_priority_response_resolution_time,
+    make_agent,
     make_status,
+    make_team,
     make_ticket,
     remove_holidays,
     set_ticket_status_and_communication_date,
@@ -1540,3 +1543,533 @@ class TestHDTicket(IntegrationTestCase):
         remove_holidays()
         frappe.db.set_single_value("HD Settings", "default_ticket_status", "Open")
         frappe.delete_doc("HD Ticket Status", "New", force=True)
+
+
+class TestHDTicketEscalation(IntegrationTestCase):
+    def setUp(self):
+        frappe.set_user("Administrator")
+        self.level1 = make_agent("esc_ticket_l1@example.com")
+        self.level2 = make_agent("esc_ticket_l2@example.com")
+        self.level3 = make_agent("esc_ticket_l3@example.com")
+
+    def make_escalation_team(self, team_name, levels):
+        if frappe.db.exists("HD Team", team_name):
+            frappe.delete_doc("HD Team", team_name, force=True, ignore_permissions=True)
+        team = frappe.get_doc(
+            {
+                "doctype": "HD Team",
+                "team_name": team_name,
+                "enable_ticket_escalation": 1,
+                "escalation_levels": levels,
+            }
+        )
+        team.insert(ignore_permissions=True)
+        return team
+
+    def backdate_escalation_start(self, ticket_name, hours_ago):
+        past = add_to_date(now_datetime(), hours=-hours_ago)
+        frappe.db.set_value(
+            "HD Ticket", ticket_name, "escalation_level_started_on", past
+        )
+
+    def reload_ticket(self, ticket_name):
+        return frappe.get_doc("HD Ticket", ticket_name)
+
+    def test_ticket_enters_level_1_on_creation(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation L1",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket.reload()
+
+        self.assertEqual(ticket.current_escalation_level, 1)
+        self.assertTrue(ticket.escalation_active)
+        self.assertTrue(ticket.escalation_level_started_on)
+        self.assertEqual(ticket.escalation_access_level, "Read & Reply")
+
+        assignees = frappe.desk.form.assign_to.get(
+            {"doctype": "HD Ticket", "name": ticket.name}
+        )
+        self.assertIn(self.level1, [a.owner for a in assignees])
+
+    def test_escalates_to_level_2_when_overdue(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Overdue",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        self.backdate_escalation_start(ticket.name, hours_ago=2)
+
+        process_ticket_escalations()
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertEqual(ticket.current_escalation_level, 2)
+        self.assertTrue(ticket.escalation_active)
+        self.assertEqual(ticket.escalation_access_level, "Read Only")
+
+        assignees = frappe.desk.form.assign_to.get(
+            {"doctype": "HD Ticket", "name": ticket.name}
+        )
+        owners = [a.owner for a in assignees]
+        self.assertIn(self.level2, owners)
+        self.assertNotIn(self.level1, owners)
+
+        activities = frappe.get_all(
+            "HD Ticket Activity",
+            filters={"ticket": ticket.name, "action": ["like", "%Escalated from Level 1%"]},
+        )
+        self.assertTrue(activities)
+
+    def test_agent_reply_stops_timer_no_escalation(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Agent Reply",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        self.backdate_escalation_start(ticket.name, hours_ago=2)
+
+        frappe.set_user(self.level1)
+        ticket = self.reload_ticket(ticket.name)
+        ticket.reply_via_agent(message="Agent responded before deadline")
+        frappe.set_user("Administrator")
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertFalse(ticket.escalation_active)
+        self.assertEqual(ticket.current_escalation_level, 1)
+
+        process_ticket_escalations()
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertEqual(
+            ticket.current_escalation_level,
+            1,
+            "Job must not escalate once escalation_active is 0",
+        )
+
+    def test_customer_reply_after_agent_reply_rearms_same_level(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Customer Rearm",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+
+        frappe.set_user(self.level1)
+        ticket = self.reload_ticket(ticket.name)
+        ticket.reply_via_agent(message="Agent responded")
+        frappe.set_user("Administrator")
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertFalse(ticket.escalation_active)
+        old_started_on = get_datetime(ticket.escalation_level_started_on)
+
+        ticket.create_communication_via_contact("Customer follow up")
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertTrue(ticket.escalation_active)
+        self.assertEqual(ticket.current_escalation_level, 1)
+        self.assertGreaterEqual(
+            get_datetime(ticket.escalation_level_started_on), old_started_on
+        )
+
+    def test_manual_reassignment_does_not_crash(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Manual Reassign",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket.assign_agent(self.level2)
+        ticket = self.reload_ticket(ticket.name)
+        self.assertTrue(ticket.name)
+
+    def test_resolve_then_reopen_resets_timer_same_level(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Reopen",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket = self.reload_ticket(ticket.name)
+
+        resolved_status = frappe.db.get_value(
+            "HD Ticket Status", {"category": "Resolved"}, "name"
+        )
+        ticket.status = resolved_status
+        ticket.save(ignore_permissions=True)
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertFalse(ticket.escalation_active)
+        self.assertEqual(ticket.current_escalation_level, 1)
+
+        # Backdate the (now stale) level_started_on to simulate time having passed
+        # while resolved, so we can prove the reopen doesn't reuse it.
+        stale_time = add_to_date(now_datetime(), hours=-100)
+        frappe.db.set_value(
+            "HD Ticket",
+            ticket.name,
+            "escalation_level_started_on",
+            stale_time,
+            update_modified=False,
+        )
+
+        before_reopen = now_datetime()
+        ticket = self.reload_ticket(ticket.name)
+        ticket.create_communication_via_contact("Customer reopens with new info")
+
+        ticket = self.reload_ticket(ticket.name)
+        self.assertTrue(ticket.escalation_active)
+        self.assertEqual(
+            ticket.current_escalation_level,
+            1,
+            "Reopen must not advance the escalation level",
+        )
+        self.assertGreaterEqual(
+            get_datetime(ticket.escalation_level_started_on), before_reopen
+        )
+
+    def test_resolve_reopen_chain_gives_fresh_timestamp_each_time(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Reopen Chain",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket = self.reload_ticket(ticket.name)
+
+        resolved_status = frappe.db.get_value(
+            "HD Ticket Status", {"category": "Resolved"}, "name"
+        )
+        ticket.status = resolved_status
+        ticket.save(ignore_permissions=True)
+
+        # First reopen
+        ticket = self.reload_ticket(ticket.name)
+        ticket.create_communication_via_contact("First reopen")
+        ticket = self.reload_ticket(ticket.name)
+        self.assertTrue(ticket.escalation_active)
+        first_reopen_ts = get_datetime(ticket.escalation_level_started_on)
+
+        # Resolve again
+        ticket.status = resolved_status
+        ticket.save(ignore_permissions=True)
+        ticket = self.reload_ticket(ticket.name)
+        self.assertFalse(ticket.escalation_active)
+
+        # Backdate again to prove the second reopen doesn't reuse the first
+        # reopen's timestamp either.
+        frappe.db.set_value(
+            "HD Ticket",
+            ticket.name,
+            "escalation_level_started_on",
+            add_to_date(first_reopen_ts, hours=-50),
+            update_modified=False,
+        )
+
+        before_second_reopen = now_datetime()
+        ticket = self.reload_ticket(ticket.name)
+        ticket.create_communication_via_contact("Second reopen")
+        ticket = self.reload_ticket(ticket.name)
+        self.assertTrue(ticket.escalation_active)
+        self.assertGreaterEqual(
+            get_datetime(ticket.escalation_level_started_on), before_second_reopen
+        )
+
+    def test_read_only_tier_blocks_reply_but_allows_read(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Read Only",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket = self.reload_ticket(ticket.name)
+        self.assertEqual(ticket.escalation_access_level, "Read Only")
+
+        frappe.set_user(self.level1)
+        with self.assertRaises(frappe.PermissionError):
+            ticket.reply_via_agent(message="Should be blocked")
+        frappe.set_user("Administrator")
+
+        from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import has_permission
+
+        self.assertTrue(has_permission(ticket, ptype="read", user=self.level1))
+
+    def test_reply_only_tier_allows_reply(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Reply Only",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Reply Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket = self.reload_ticket(ticket.name)
+
+        frappe.set_user(self.level1)
+        ticket.reply_via_agent(message="Reply allowed at Reply Only tier")
+        frappe.set_user("Administrator")
+
+        comm = get_latest_ticket_communication(ticket.name)
+        self.assertTrue(comm)
+
+    def test_read_and_reply_tier_allows_reply(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Read Reply",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket = self.reload_ticket(ticket.name)
+
+        frappe.set_user(self.level1)
+        ticket.reply_via_agent(message="Reply allowed at Read & Reply tier")
+        frappe.set_user("Administrator")
+
+        comm = get_latest_ticket_communication(ticket.name)
+        self.assertTrue(comm)
+
+    def test_full_access_tier_no_extra_restriction(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Full Access",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Full Access",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        ticket = self.reload_ticket(ticket.name)
+
+        frappe.set_user(self.level1)
+        ticket.reply_via_agent(message="Reply allowed at Full Access tier")
+        frappe.set_user("Administrator")
+
+        comm = get_latest_ticket_communication(ticket.name)
+        self.assertTrue(comm)
+
+    def test_notify_enabled_sends_email_on_escalation(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Notify On",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 1,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        self.backdate_escalation_start(ticket.name, hours_ago=2)
+
+        before_count = frappe.db.count(
+            "Email Queue",
+            filters={"reference_doctype": "HD Ticket", "reference_name": ticket.name},
+        )
+        process_ticket_escalations()
+        after_count = frappe.db.count(
+            "Email Queue",
+            filters={"reference_doctype": "HD Ticket", "reference_name": ticket.name},
+        )
+        self.assertGreater(after_count, before_count)
+
+    def test_notify_disabled_sends_no_email(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Notify Off",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        self.backdate_escalation_start(ticket.name, hours_ago=2)
+
+        before_count = frappe.db.count(
+            "Email Queue",
+            filters={"reference_doctype": "HD Ticket", "reference_name": ticket.name},
+        )
+        process_ticket_escalations()
+        after_count = frappe.db.count(
+            "Email Queue",
+            filters={"reference_doctype": "HD Ticket", "reference_name": ticket.name},
+        )
+        self.assertEqual(after_count, before_count)
+
+    def test_max_level_stops_escalation_gracefully(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Max Level",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket = make_ticket(agent_group=team.name)
+        self.backdate_escalation_start(ticket.name, hours_ago=2)
+
+        # First pass: already at (only/final) level 1, overdue -> should stop,
+        # not attempt a nonexistent level 2.
+        process_ticket_escalations()
+        ticket = self.reload_ticket(ticket.name)
+        self.assertEqual(ticket.current_escalation_level, 1)
+        self.assertFalse(ticket.escalation_active)
+
+        # Second pass: escalation_active is now 0, so the job should not touch
+        # this ticket at all (candidate query excludes it) and must not error.
+        process_ticket_escalations()
+        ticket = self.reload_ticket(ticket.name)
+        self.assertEqual(ticket.current_escalation_level, 1)
+        self.assertFalse(ticket.escalation_active)
+
+    def test_two_tickets_escalate_independently(self):
+        team = self.make_escalation_team(
+            "Test Ticket Escalation Independence",
+            [
+                {
+                    "assigned_to": self.level1,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read & Reply",
+                    "notify_assignee": 0,
+                },
+                {
+                    "assigned_to": self.level2,
+                    "escalate_after_hours": 1,
+                    "access_level": "Read Only",
+                    "notify_assignee": 0,
+                },
+            ],
+        )
+        ticket_a = make_ticket(agent_group=team.name, subject="Independent A")
+        ticket_b = make_ticket(agent_group=team.name, subject="Independent B")
+
+        # Only escalate ticket_a
+        self.backdate_escalation_start(ticket_a.name, hours_ago=2)
+
+        process_ticket_escalations()
+
+        ticket_a = self.reload_ticket(ticket_a.name)
+        ticket_b = self.reload_ticket(ticket_b.name)
+
+        self.assertEqual(ticket_a.current_escalation_level, 2)
+        self.assertEqual(
+            ticket_b.current_escalation_level,
+            1,
+            "Ticket B must not be affected by ticket A's escalation run",
+        )
+
+    def tearDown(self):
+        frappe.set_user("Administrator")

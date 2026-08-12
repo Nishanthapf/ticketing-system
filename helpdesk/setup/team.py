@@ -3,10 +3,9 @@ import frappe
 DT = "HD Team"
 
 # Department/support teams, seeded once on fresh install only (create-if-missing).
-# Deliberately NOT a fixture: HD Team has admin-managed fields (SLA escalation
-# config: enable_sla_escalation, escalation_after_hours, escalation_max_hops,
-# escalation_users, escalation_email_template_*) that fixture import would wipe
-# on every `bench migrate` / Frappe Cloud build, since fixture sync force-
+# Deliberately NOT a fixture: HD Team has admin-managed fields (ticket escalation
+# config: enable_ticket_escalation, escalation_levels) that fixture import would
+# wipe on every `bench migrate` / Frappe Cloud build, since fixture sync force-
 # overwrites the whole doc regardless of the app's hooks.py fixtures list.
 OOTB_TEAMS = [
     "PACE Team - Hellen",

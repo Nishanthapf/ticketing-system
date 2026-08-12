@@ -19,15 +19,56 @@ ASSIGNMENT_DAYS = [
 ]
 
 
+MAX_ESCALATION_LEVELS = 6
+
+
 class HDTeam(Document):
     def validate(self):
-        self.validate_sla_escalation()
+        self.validate_ticket_escalation()
 
-    def validate_sla_escalation(self):
-        if not self.enable_sla_escalation:
+    def validate_ticket_escalation(self):
+        if not self.enable_ticket_escalation:
             return
-        if frappe.utils.flt(self.escalation_after_hours) <= 0:
-            frappe.throw(frappe._("Set Escalate After (hours) to a value greater than 0."))
+
+        if not self.escalation_levels:
+            frappe.throw(
+                frappe._(
+                    "Add at least one escalation level, or disable Ticket Escalation."
+                )
+            )
+
+        if len(self.escalation_levels) > MAX_ESCALATION_LEVELS:
+            frappe.throw(
+                frappe._(
+                    "A maximum of {0} escalation levels is allowed."
+                ).format(MAX_ESCALATION_LEVELS)
+            )
+
+        # `no_of_escalation_levels` is a UI convenience that drives add/remove of
+        # rows client-side (see hd_team.js / EscalationLevels.vue) — the row count
+        # itself is the actual source of truth. Always derive the field from the
+        # rows on save rather than validating against it, so any path that
+        # appends rows programmatically (API, tests, imports) without also
+        # touching this field can never be rejected for "disagreeing" with it.
+        self.no_of_escalation_levels = str(len(self.escalation_levels))
+
+        for row in self.escalation_levels:
+            if not row.assigned_to:
+                frappe.throw(
+                    frappe._("Row #{0}: Assignee is required for each escalation level.").format(
+                        row.idx
+                    )
+                )
+            if frappe.utils.flt(row.escalate_after_hours) <= 0:
+                frappe.throw(
+                    frappe._(
+                        "Row #{0}: Set Escalate After (hours) to a value greater than 0."
+                    ).format(row.idx)
+                )
+
+        # Auto-number levels by row position, regardless of what was set client-side.
+        for i, row in enumerate(self.escalation_levels, start=1):
+            row.level = i
 
     def after_insert(self):
         # Guard: don't create a duplicate rule if one already exists for this team.

@@ -98,6 +98,8 @@
           </div>
         </div>
       </div>
+      <hr class="my-4" />
+      <EscalationLevels v-if="!team.loading" :team="team" />
     </template>
   </SettingsLayoutBase>
   <RenameTeamModal
@@ -136,6 +138,7 @@ import UserIcon from "~icons/lucide/user";
 import AgentCard from "../AgentCard.vue";
 import { setActiveSettingsTab } from "../settingsModal";
 import AgentSelector from "./components/AgentSelector.vue";
+import EscalationLevels from "./components/EscalationLevels.vue";
 
 const props = defineProps<{
   teamName: string;

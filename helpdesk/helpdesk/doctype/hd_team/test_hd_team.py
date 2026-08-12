@@ -129,3 +129,113 @@ class TestHDTeam(FrappeTestCase):
         team2 = make_team("Test AR Enable Disable 2", disabled=True)
         ar2 = frappe.get_doc("Assignment Rule", team2.assignment_rule)
         self.assertTrue(ar2.disabled)
+
+
+class TestHDTeamEscalation(FrappeTestCase):
+    def setUp(self):
+        self.agent1 = make_agent("esc_team_agent1@example.com")
+        self.agent2 = make_agent("esc_team_agent2@example.com")
+
+    def make_escalation_team(self, team_name, levels):
+        if frappe.db.exists("HD Team", team_name):
+            frappe.delete_doc("HD Team", team_name, force=True, ignore_permissions=True)
+        team = frappe.get_doc(
+            {
+                "doctype": "HD Team",
+                "team_name": team_name,
+                "enable_ticket_escalation": 1,
+                "escalation_levels": levels,
+            }
+        )
+        team.insert(ignore_permissions=True)
+        return team
+
+    def test_enable_with_zero_levels_throws(self):
+        team = frappe.get_doc(
+            {
+                "doctype": "HD Team",
+                "team_name": "Test Escalation Zero Levels",
+                "enable_ticket_escalation": 1,
+            }
+        )
+        self.assertRaises(frappe.ValidationError, team.insert, ignore_permissions=True)
+
+    def test_zero_hours_throws(self):
+        team = frappe.get_doc(
+            {
+                "doctype": "HD Team",
+                "team_name": "Test Escalation Zero Hours",
+                "enable_ticket_escalation": 1,
+                "escalation_levels": [
+                    {
+                        "assigned_to": self.agent1,
+                        "escalate_after_hours": 0,
+                        "access_level": "Read & Reply",
+                    }
+                ],
+            }
+        )
+        self.assertRaises(frappe.ValidationError, team.insert, ignore_permissions=True)
+
+    def test_blank_assignee_throws(self):
+        team = frappe.get_doc(
+            {
+                "doctype": "HD Team",
+                "team_name": "Test Escalation Blank Assignee",
+                "enable_ticket_escalation": 1,
+                "escalation_levels": [
+                    {
+                        "escalate_after_hours": 1,
+                        "access_level": "Read & Reply",
+                    }
+                ],
+            }
+        )
+        self.assertRaises(frappe.ValidationError, team.insert, ignore_permissions=True)
+
+    def test_seventh_level_throws(self):
+        levels = [
+            {
+                "assigned_to": self.agent1,
+                "escalate_after_hours": 1,
+                "access_level": "Read & Reply",
+            }
+            for _ in range(7)
+        ]
+        team = frappe.get_doc(
+            {
+                "doctype": "HD Team",
+                "team_name": "Test Escalation Seven Levels",
+                "enable_ticket_escalation": 1,
+                "escalation_levels": levels,
+            }
+        )
+        self.assertRaises(frappe.ValidationError, team.insert, ignore_permissions=True)
+
+    def test_levels_auto_numbered(self):
+        team = self.make_escalation_team(
+            "Test Escalation Auto Number",
+            [
+                {
+                    "assigned_to": self.agent1,
+                    "escalate_after_hours": 2,
+                    "access_level": "Read & Reply",
+                },
+                {
+                    "assigned_to": self.agent2,
+                    "escalate_after_hours": 4,
+                    "access_level": "Full Access",
+                },
+            ],
+        )
+        levels = sorted(team.escalation_levels, key=lambda r: r.idx)
+        self.assertEqual([r.level for r in levels], [1, 2])
+
+        # Re-save should keep numbering consistent with row order regardless
+        # of whatever was previously stored.
+        team.reload()
+        team.escalation_levels[0].level = 99
+        team.save(ignore_permissions=True)
+        team.reload()
+        levels = sorted(team.escalation_levels, key=lambda r: r.idx)
+        self.assertEqual([r.level for r in levels], [1, 2])

@@ -22,6 +22,14 @@ from helpdesk.helpdesk.doctype.hd_settings.helpers import (
     get_default_email_content,
     is_email_content_empty,
 )
+from helpdesk.helpdesk.doctype.hd_ticket.escalation import (
+    apply_escalation_side_effects_if_pending,
+    on_agent_reply,
+    on_customer_reply,
+    on_reopen,
+    on_resolved,
+    start_escalation_if_enabled,
+)
 from helpdesk.helpdesk.doctype.hd_ticket_activity.hd_ticket_activity import (
     log_ticket_activity,
 )
@@ -90,6 +98,8 @@ class HDTicket(Document):
 
     def validate(self):
         self.validate_feedback()
+        if self.agent_group:
+            start_escalation_if_enabled(self)
 
     def before_save(self):
         self.apply_sla()
@@ -171,6 +181,7 @@ class HDTicket(Document):
             frappe.throw(_("Could not send feedback email,due to: {0}").format(e))
 
     def after_insert(self):
+        apply_escalation_side_effects_if_pending(self)
 
         # Telemetry Event
         self.capture_ticket_created_telemetry_events()
@@ -209,6 +220,7 @@ class HDTicket(Document):
 
     def on_update(self):
         # flake8: noqa
+        apply_escalation_side_effects_if_pending(self)
         if self.status_category == "Open":
             if (
                 self.get_doc_before_save()
@@ -655,12 +667,38 @@ class HDTicket(Document):
             return f"{root_uri}/student-portal/support?ticket={self.name}"
         return f"{root_uri}/helpdesk/my-tickets/{self.name}"
 
+    def check_escalation_read_only(self):
+        """
+        Guard for reply/comment-creation methods: if the acting user is the
+        ticket's current escalation-level assignee and that level's access is
+        "Read Only", block the mutating action. Reply Only / Read & Reply /
+        Full Access tiers are unaffected — this only ever blocks, never grants.
+        """
+        if self.escalation_access_level != "Read Only":
+            return
+        if not self.current_escalation_level or not self.agent_group:
+            return
+        user = frappe.session.user
+        team = frappe.get_cached_doc("HD Team", self.agent_group)
+        current_row = next(
+            (r for r in team.escalation_levels if r.level == self.current_escalation_level),
+            None,
+        )
+        if current_row and current_row.assigned_to == user:
+            frappe.throw(
+                _(
+                    "You have read-only access to this ticket at your current escalation level."
+                ),
+                frappe.PermissionError,
+            )
+
     @frappe.whitelist()
     def new_comment(self, content: str, attachments: list[str] = []):
         if not is_agent():
             frappe.throw(
                 _("You are not permitted to add a comment"), frappe.PermissionError
             )
+        self.check_escalation_read_only()
         c = frappe.new_doc("HD Ticket Comment")
         c.commented_by = frappe.session.user
         c.content = content
@@ -687,6 +725,7 @@ class HDTicket(Document):
             frappe.throw(
                 _("You are not permitted to reply as an agent"), frappe.PermissionError
             )
+        self.check_escalation_read_only()
         skip_email_workflow = self.skip_email_workflow()
         medium = "" if skip_email_workflow else "Email"
         subject = f"Re: {self.subject}"
@@ -1017,6 +1056,8 @@ class HDTicket(Document):
         self.resolved_on = (
             frappe.utils.now_datetime() if self.status_category == "Resolved" else None
         )
+        if self.status_category == "Resolved":
+            on_resolved(self)
 
     def get_merge_target(self):
         # Follow the chain of merged tickets to the final, non-merged ticket. Return None
@@ -1067,6 +1108,7 @@ class HDTicket(Document):
         # handle re opening tickets for email
         if c.sent_or_received == "Received":
             # check if agent has replied
+            was_resolved_category = self.status_category == "Resolved"
 
             if self.has_agent_replied:
                 self.status = self.ticket_reopen_status
@@ -1074,6 +1116,17 @@ class HDTicket(Document):
                 self.status = self.default_open_status
             # if received that means customer has replied
             self.last_customer_response = frappe.utils.now_datetime()
+
+            # Escalation: a customer reply always re-arms the current level's
+            # timer at the same level. If this reply is what reopens a
+            # Resolved-equivalent ticket, on_reopen() covers the same
+            # state transition — both are idempotent (same end state), so
+            # calling both here is safe and avoids relying on save-time
+            # status_category diffing for the reopen case.
+            if was_resolved_category:
+                on_reopen(self)
+            else:
+                on_customer_reply(self)
         # If communication is outgoing, it must be a reply from agent
         if c.sent_or_received == "Sent":
             # Ignore system notifications
@@ -1084,6 +1137,7 @@ class HDTicket(Document):
                 self.first_responded_on or frappe.utils.now_datetime()
             )
             self.last_agent_response = frappe.utils.now_datetime()
+            on_agent_reply(self)
 
             # TODO: remove this feature once we add automation feature
             if frappe.db.get_single_value("HD Settings", "auto_update_status"):
@@ -1326,7 +1380,10 @@ def _role_has_doctype_permission(user: str, ptype: str) -> bool:
     )
 
 
-def has_permission(doc, user=None):
+MUTATING_PTYPES = {"write", "delete", "submit", "cancel", "create"}
+
+
+def has_permission(doc, ptype=None, user=None, **kwargs):
     user = user or frappe.session.user
     if is_admin(user):
         return True
@@ -1341,7 +1398,45 @@ def has_permission(doc, user=None):
         return True
     if not is_agent(user):
         return False
-    return _agent_has_permission(doc, user)
+    if not _agent_has_permission(doc, user):
+        return False
+    # Additive floor/ceiling restriction layered on top for the specific
+    # escalation assignee only, not a full override of the permission model —
+    # broader grants above (admin, owner/contact, agent-team access) already
+    # won and returned before this point.
+    if _is_read_only_escalation_assignee(doc, user) and ptype in MUTATING_PTYPES:
+        return False
+    return True
+
+
+def _is_read_only_escalation_assignee(doc, user: str) -> bool:
+    """
+    True if `user` is the ticket's CURRENT escalation-level assignee (per the
+    team's escalation_levels config, not merely someone who happens to be
+    assigned) AND that level's access is "Read Only".
+    """
+    if doc.get("escalation_access_level") != "Read Only":
+        return False
+    if not doc.get("current_escalation_level") or not doc.get("agent_group"):
+        return False
+
+    # Must actually be an assignee on the ticket (ToDo owner).
+    assignees = doc.get("_assign")
+    if assignees:
+        try:
+            if user not in json.loads(assignees):
+                return False
+        except (ValueError, TypeError):
+            return False
+    else:
+        return False
+
+    team = frappe.get_cached_doc("HD Team", doc.agent_group)
+    current_row = next(
+        (r for r in team.escalation_levels if r.level == doc.current_escalation_level),
+        None,
+    )
+    return bool(current_row and current_row.assigned_to == user)
 
 
 def _is_customer_manager(customer: str, user: str) -> bool:

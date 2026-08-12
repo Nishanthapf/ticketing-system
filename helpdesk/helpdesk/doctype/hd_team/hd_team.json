@@ -13,18 +13,10 @@
   "column_break_feto",
   "disabled",
   "ignore_restrictions",
-  "sla_escalation_section",
-  "enable_sla_escalation",
-  "escalation_after_hours",
-  "column_break_esc1",
-  "escalation_max_hops",
-  "escalation_users",
-  "escalation_email_templates_section",
-  "escalation_email_template_new_agent",
-  "escalation_email_template_previous_agent",
-  "column_break_esc2",
-  "notify_on_max_hops",
-  "escalation_email_template_max_hops"
+  "ticket_escalation_section",
+  "enable_ticket_escalation",
+  "no_of_escalation_levels",
+  "escalation_levels"
  ],
  "fields": [
   {
@@ -47,8 +39,7 @@
    "fieldname": "users",
    "fieldtype": "Table MultiSelect",
    "label": "Users",
-   "options": "HD Team Member",
-   "reqd": 0
+   "options": "HD Team Member"
   },
   {
    "default": "0",
@@ -69,93 +60,39 @@
    "label": "Disabled"
   },
   {
-   "fieldname": "sla_escalation_section",
+   "fieldname": "ticket_escalation_section",
    "fieldtype": "Section Break",
-   "label": "SLA Escalation (First Response)"
+   "label": "Ticket Escalation"
   },
   {
    "default": "0",
-   "description": "If a ticket assigned to an agent in this team gets no first response within the configured time, automatically reassign it to the next agent.",
-   "fieldname": "enable_sla_escalation",
+   "description": "When enabled, tickets assigned to this team automatically escalate through the configured levels below if an agent does not reply in time.",
+   "fieldname": "enable_ticket_escalation",
    "fieldtype": "Check",
-   "label": "Enable SLA Escalation"
+   "label": "Enable Ticket Escalation"
   },
   {
    "default": "1",
-   "depends_on": "eval:doc.enable_sla_escalation",
-   "description": "Hours to wait for a first response before reassigning the ticket to the next agent. Use fractions for minutes (0.5 = 30 min) or larger values for days (72 = 3 days).",
-   "fieldname": "escalation_after_hours",
-   "fieldtype": "Float",
-   "label": "Escalate After (hours)",
-   "mandatory_depends_on": "eval:doc.enable_sla_escalation",
-   "non_negative": 1,
-   "precision": "2"
+   "depends_on": "eval:doc.enable_ticket_escalation",
+   "description": "How many escalation levels this team uses. Rows in the table below are added/removed automatically to match.",
+   "fieldname": "no_of_escalation_levels",
+   "fieldtype": "Select",
+   "label": "Number of Escalation Levels",
+   "options": "1\n2\n3\n4\n5\n6",
+   "reqd": 1
   },
   {
-   "fieldname": "column_break_esc1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "3",
-   "depends_on": "eval:doc.enable_sla_escalation",
-   "description": "Maximum number of times a ticket will be auto-reassigned before escalation stops and only the last agent + team lead are notified.",
-   "fieldname": "escalation_max_hops",
-   "fieldtype": "Int",
-   "label": "Max Escalation Hops",
-   "non_negative": 1
-  },
-  {
-   "depends_on": "eval:doc.enable_sla_escalation",
-   "description": "Ordered pool of agents to escalate through. Leave blank to use the team's Users list above (in that order).",
-   "fieldname": "escalation_users",
-   "fieldtype": "Table MultiSelect",
-   "label": "Escalation Order (optional override)",
-   "options": "HD Team Member"
-  },
-  {
-   "collapsible": 1,
-   "depends_on": "eval:doc.enable_sla_escalation",
-   "fieldname": "escalation_email_templates_section",
-   "fieldtype": "Section Break",
-   "label": "Escalation Email Templates"
-  },
-  {
-   "description": "Sent to the newly assigned agent. Leave blank to use the system default.",
-   "fieldname": "escalation_email_template_new_agent",
-   "fieldtype": "Link",
-   "label": "Email to New Agent",
-   "options": "Email Template"
-  },
-  {
-   "description": "Sent to the agent the ticket is taken away from. Leave blank to use the system default.",
-   "fieldname": "escalation_email_template_previous_agent",
-   "fieldtype": "Link",
-   "label": "Email to Previous Agent",
-   "options": "Email Template"
-  },
-  {
-   "fieldname": "column_break_esc2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "description": "If enabled, the ticket's assignees are emailed when Max Escalation Hops is reached and no agent has responded. Leave unchecked to only log the event on the ticket's Activity tab, with no email sent.",
-   "fieldname": "notify_on_max_hops",
-   "fieldtype": "Check",
-   "label": "Send Max Hops Reached Email"
-  },
-  {
-   "depends_on": "eval:doc.notify_on_max_hops",
-   "description": "Sent to the ticket's assignees when Max Escalation Hops is reached and no agent has responded. Leave blank to use the system default.",
-   "fieldname": "escalation_email_template_max_hops",
-   "fieldtype": "Link",
-   "label": "Email on Max Hops Reached",
-   "options": "Email Template"
+   "depends_on": "eval:doc.enable_ticket_escalation",
+   "description": "Configure who a ticket escalates to, how long to wait at each level, and what access they get. Maximum 6 levels.",
+   "fieldname": "escalation_levels",
+   "fieldtype": "Table",
+   "label": "Escalation Levels",
+   "options": "HD Escalation Level"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-05-11 13:28:58.204342",
+ "modified": "2026-08-12 12:23:08.629555",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Team",
@@ -203,9 +140,9 @@
    "select": 1
   },
   {
+   "read": 1,
    "role": "All",
-   "select": 1,
-   "read": 1
+   "select": 1
   }
  ],
  "quick_entry": 1,

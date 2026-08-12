@@ -55,6 +55,10 @@ scheduler_events = {
         # short configured duration (e.g. 6h) still closes within an hour of it
         # elapsing.
         "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.auto_close_resolved_tickets",
+        # Escalates tickets to the next configured HD Team escalation level when
+        # an agent hasn't replied within that level's configured wait time. See
+        # helpdesk/helpdesk/doctype/hd_ticket/escalation.py.
+        "helpdesk.helpdesk.doctype.hd_ticket.escalation.process_ticket_escalations",
     ],
 }
 
@@ -97,9 +101,8 @@ fixtures = [
     # missing) via after_install and the create_ootb_teams_if_missing patch —
     # NOT as a fixture. Fixture import force-overwrites the whole doc on every
     # migrate regardless of this hooks.fixtures list, which was wiping
-    # admin-managed SLA escalation config (enable_sla_escalation,
-    # escalation_after_hours, escalation_max_hops, escalation_users,
-    # escalation_email_template_*) on every Frappe Cloud build.
+    # admin-managed ticket escalation config (enable_ticket_escalation,
+    # escalation_levels) on every Frappe Cloud build.
     # Student auto-populate + dynamic Type of Issue form script
     {
         "doctype": "HD Form Script",

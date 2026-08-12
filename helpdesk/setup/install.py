@@ -8,6 +8,7 @@ from helpdesk.consts import DEFAULT_ARTICLE_CATEGORY
 from helpdesk.setup.default_views import add_default_views
 
 from .default_template import create_default_template
+from .escalation_email_templates import create_escalation_email_templates_if_missing
 from .file import create_helpdesk_folder
 from .team import create_ootb_teams
 from .ticket_feedback import create_ticket_feedback_options
@@ -37,6 +38,7 @@ def after_install():
     create_helpdesk_folder()
     create_ootb_ticket_types()
     create_nls_ticket_types()
+    create_escalation_email_templates_if_missing()
     try:
         create_welcome_ticket()
     except Exception:
