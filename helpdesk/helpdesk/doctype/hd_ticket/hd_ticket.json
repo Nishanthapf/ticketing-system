@@ -358,6 +358,13 @@
    "read_only": 1
   },
   {
+   "fieldname": "reopen_reason",
+   "fieldtype": "Small Text",
+   "label": "Reopen Reason",
+   "no_copy": 1,
+   "read_only": 1
+  },
+  {
    "fieldname": "user_resolution_time",
    "fieldtype": "Duration",
    "label": "User Resolution Time",

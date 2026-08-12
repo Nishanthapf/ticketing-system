@@ -447,7 +447,12 @@ class HDTicket(Document):
         )
 
     def check_update_perms(self):
-        if self.is_new() or is_agent() or not self.via_customer_portal:
+        if (
+            self.is_new()
+            or is_agent()
+            or not self.via_customer_portal
+            or self.flags.allow_customer_reopen
+        ):
             return
         old_doc = self.get_doc_before_save()
         is_closed = old_doc.status == "Closed"
@@ -609,6 +614,40 @@ class HDTicket(Document):
         )
 
         return bool(int(check))
+
+    @frappe.whitelist()
+    def reopen_ticket(self, reason: str):
+        """
+        Customer-initiated reopen of a Closed ticket, allowed only within a 24
+        hour window of resolution and only with a mandatory reason. Distinct
+        from the implicit reopen-on-email-reply path in `on_communication_update`
+        — this is the explicit "Reopen Ticket" action on the customer portal.
+        """
+        reason = (reason or "").strip()
+        if not reason:
+            frappe.throw(_("Please provide a reason for reopening this ticket."))
+
+        if frappe.session.user not in (self.contact, self.raised_by, self.owner):
+            frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+        if self.status != "Closed":
+            frappe.throw(_("Only closed tickets can be reopened."))
+
+        if not self.resolution_date:
+            frappe.throw(_("This ticket has no resolution date and cannot be reopened."))
+
+        if now_datetime() - get_datetime(self.resolution_date) > timedelta(hours=24):
+            frappe.throw(
+                _("This ticket can no longer be reopened (the 24 hour window has passed).")
+            )
+
+        self.reopen_reason = reason
+        self.status = self.ticket_reopen_status or self.default_open_status
+        self.flags.allow_customer_reopen = True
+        self.save(ignore_permissions=True)
+
+        log_ticket_activity(self.name, _("reopened the ticket: {0}").format(reason))
+        on_reopen(self)
 
     @frappe.whitelist()
     def get_last_communication(self):

@@ -20,6 +20,13 @@
             <LucideCheck class="size-4" />
           </template>
         </Button>
+        <Button
+          v-if="canReopen"
+          :label="__('Reopen Ticket')"
+          theme="gray"
+          variant="outline"
+          @click="showReopenDialog = true"
+        />
       </template>
     </LayoutHeader>
     <div class="flex overflow-hidden h-full w-full">
@@ -90,6 +97,7 @@
       <TicketCustomerSidebar v-if="!isMobileView" @open="isExpanded = true" />
     </div>
     <TicketFeedback v-model:open="showFeedbackDialog" />
+    <TicketReopenDialog v-model:open="showReopenDialog" />
   </div>
 </template>
 
@@ -112,6 +120,7 @@ import {
   Button,
   call,
   createResource,
+  dayjs,
   Tabs,
   toast,
 } from "frappe-ui";
@@ -128,6 +137,7 @@ import { ITicket } from "./symbols";
 import TicketConversation from "./TicketConversation.vue";
 import TicketCustomerTemplateFields from "./TicketCustomerTemplateFields.vue";
 import TicketFeedback from "./TicketFeedback.vue";
+import TicketReopenDialog from "./TicketReopenDialog.vue";
 const TicketTextEditor = defineAsyncComponent(
   () => import("./TicketTextEditor.vue")
 );
@@ -171,6 +181,7 @@ const editor = ref(null);
 const editorContent = ref("");
 const attachments = ref([]);
 const showFeedbackDialog = ref(false);
+const showReopenDialog = ref(false);
 const isExpanded = ref(false);
 
 const { isMobileView } = useScreenSize();
@@ -368,6 +379,16 @@ const showFeedback = computed(() => {
     (c) => c.sender !== ticket.data.raised_by
   );
   return hasAgentCommunication && isFeedbackMandatory;
+});
+
+// Customer can reopen a Closed ticket only within 24 hours of resolution.
+// The actual window is re-validated server-side in `reopen_ticket` — this
+// only controls whether the button is shown.
+const canReopen = computed(() => {
+  if (ticket.data.status !== "Closed" || !ticket.data.resolution_date) {
+    return false;
+  }
+  return dayjs().diff(dayjs(ticket.data.resolution_date), "hour") < 24;
 });
 const { startViewing, stopViewing } = useActiveViewers(props.ticketId);
 
