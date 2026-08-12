@@ -135,6 +135,13 @@ const selectBannerActions = [
       showExportModal.value = true;
     },
   },
+  {
+    label: __("Export Tickets (PDF)"),
+    icon: "lucide-file-down",
+    onClick: (selections: Set<string>) => {
+      exportTicketConversations(new Set(selections));
+    },
+  },
 ];
 
 const options = computed(() => ({
@@ -323,6 +330,32 @@ async function exportRows(
   )}&order_by=${order_by}&page_length=${pageLength}&start=0&view=Report&with_comment_count=1`;
   reset();
   showExportModal.value = false;
+}
+
+function exportTicketConversations(selections: Set<string>) {
+  const list = listViewRef.value?.list;
+  if (!list) return;
+
+  if (selections.size > 0) {
+    window.location.href = `/api/method/helpdesk.helpdesk.doctype.hd_ticket.hd_ticket_export.bulk_export_tickets?tickets=${encodeURIComponent(
+      JSON.stringify(Array.from(selections))
+    )}`;
+    reset();
+    return;
+  }
+
+  const resolveAtMe = (entry: any) => {
+    if (Array.isArray(entry)) return entry.map(resolveAtMe);
+    if (entry === "@me") return userId;
+    if (entry === "%@me%") return `%${userId}%`;
+    return entry;
+  };
+  const conditions = normalizeFilters(list.params.filters).map(
+    ([field, operator, value]) => [field, operator, resolveAtMe(value)]
+  );
+  window.location.href = `/api/method/helpdesk.helpdesk.doctype.hd_ticket.hd_ticket_export.bulk_export_tickets?filters=${encodeURIComponent(
+    JSON.stringify(conditions)
+  )}`;
 }
 
 function reset(reload = false) {

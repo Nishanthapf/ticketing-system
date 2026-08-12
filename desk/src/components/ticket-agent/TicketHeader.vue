@@ -46,6 +46,8 @@
           </div>
         </div>
         <!-- Status moved to sidebar -->
+        <!-- Export Ticket -->
+        <Button icon="lucide-download" @click="handleExportTicket" />
         <!-- Core Actions + Custom Actions -->
         <Dropdown
           v-if="groupedActions[0]?.items?.length >= 1"
@@ -211,6 +213,12 @@ const showMergeOption = computed(() => {
     ticketCount.data > 1
   );
 });
+function handleExportTicket() {
+  window.location.href = `/api/method/helpdesk.helpdesk.doctype.hd_ticket.hd_ticket_export.export_ticket?ticket=${encodeURIComponent(
+    ticket.value.doc.name
+  )}`;
+}
+
 const defaultActions = computed(() => {
   let items = [];
 

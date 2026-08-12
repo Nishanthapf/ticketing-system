@@ -13,23 +13,10 @@ interface DocType {
     idx?: number;
   }
   
-// Last updated: 2026-03-24 10:41:46.489051
+// Last updated: 2026-06-26 18:18:39.871707
 export interface HDTicketStatus extends DocType {
   /** Color: Select */
-  color?:
-    | "Black"
-    | "Gray"
-    | "Blue"
-    | "Green"
-    | "Red"
-    | "Pink"
-    | "Orange"
-    | "Amber"
-    | "Yellow"
-    | "Cyan"
-    | "Teal"
-    | "Violet"
-    | "purple";
+  color?: 'Black' | 'Gray' | 'Blue' | 'Green' | 'Red' | 'Pink' | 'Orange' | 'Amber' | 'Yellow' | 'Cyan' | 'Teal' | 'Violet' | 'purple';
   /** Label: Data */
   label_agent: string;
   /** Show end users a different view: Check */
@@ -37,14 +24,14 @@ export interface HDTicketStatus extends DocType {
   /** Label (customer view): Data */
   label_customer?: string;
   /** Category: Select */
-  category: "Open" | "Paused" | "Resolved";
+  category: 'Open' | 'Paused' | 'Resolved';
   /** Order: Int */
   order?: number;
   /** Enabled: Check */
   enabled: 0 | 1;
 }
 
-// Last updated: 2026-05-11 18:25:54.352721
+// Last updated: 2026-06-28 13:51:31.692161
 export interface HDTicket extends DocType {
   /** Subject: Data */
   subject: string;
@@ -55,9 +42,17 @@ export interface HDTicket extends DocType {
   /** Priority: Link (HD Ticket Priority) */
   priority?: string;
   /** Ticket Type: Link (HD Ticket Type) */
-  ticket_type?: string;
+  ticket_type: string;
   /** Team: Link (HD Team) */
   agent_group?: string;
+  /** Current Escalation Level: Int */
+  current_escalation_level?: number;
+  /** Escalation Level Started On: Datetime */
+  escalation_level_started_on?: string;
+  /** Escalation Active: Check */
+  escalation_active: 0 | 1;
+  /** Escalation Access Level: Data */
+  escalation_access_level?: string;
   /** Ticket Split From: Link (HD Ticket) */
   ticket_split_from?: string;
   /** Description: Text Editor */
@@ -69,13 +64,7 @@ export interface HDTicket extends DocType {
   /** Response By: Datetime */
   response_by?: string;
   /** SLA Status: Select */
-  agreement_status?:
-    | ""
-    | "First Response Due"
-    | "Resolution Due"
-    | "Failed"
-    | "Fulfilled"
-    | "Paused";
+  agreement_status?: '' | 'First Response Due' | 'Resolution Due' | 'Failed' | 'Fulfilled' | 'Paused';
   /** Resolution By: Datetime */
   resolution_by?: string;
   /** SLA Creation: Datetime */
@@ -130,6 +119,8 @@ export interface HDTicket extends DocType {
   key?: string;
   /** Status Category: Data */
   status_category?: string;
+  /** Resolved On: Datetime */
+  resolved_on?: string;
   /** Last Agent Response: Datetime */
   last_agent_response?: string;
   /** Last Customer Response: Datetime */
@@ -139,9 +130,7 @@ export interface HDTicket extends DocType {
   /** First Response Failed By: Duration */
   first_response_failed_by?: any;
   /** Resolution Failed By: Duration */
-  resolution_failed_by?: number;
-  /** Assignees: JSON */
-  _assign: string;
+  resolution_failed_by?: any;
 }
 
 // Last updated: 2024-03-23 16:01:27.847608
@@ -338,7 +327,7 @@ export interface HDTeamMember extends ChildDocType {
   user?: string;
 }
 
-// Last updated: 2026-05-11 13:28:58.204342
+// Last updated: 2026-08-12 12:23:08.629555
 export interface HDTeam extends DocType {
   /** Name: Data */
   team_name: string;
@@ -350,6 +339,12 @@ export interface HDTeam extends DocType {
   ignore_restrictions: 0 | 1;
   /** Disabled: Check */
   disabled: 0 | 1;
+  /** Enable Ticket Escalation: Check */
+  enable_ticket_escalation: 0 | 1;
+  /** Number of Escalation Levels: Select */
+  no_of_escalation_levels: '1' | '2' | '3' | '4' | '5' | '6';
+  /** Escalation Levels: Table (HD Escalation Level) */
+  escalation_levels: HDEscalationLevel[];
 }
 
 // Last updated: 2026-02-20 17:04:23.230132
@@ -466,4 +461,20 @@ export interface Contact extends DocType {
   full_name?: string;
   /** Timezone: Data (from linked User) */
   timezone?: string;
+}
+
+// Last updated: 2026-08-12 00:00:00.000000
+export interface HDEscalationLevel extends ChildDocType {
+  /** Level: Int */
+  level?: number;
+  /** Assignee: Link (User) */
+  assigned_to: string;
+  /** Escalate After (hours): Float */
+  escalate_after_hours: number;
+  /** Access Level: Select */
+  access_level: 'Read Only' | 'Reply Only' | 'Read & Reply' | 'Full Access';
+  /** Notify Assignee: Check */
+  notify_assignee: 0 | 1;
+  /** Email Template: Link (Email Template) */
+  email_template?: string;
 }
