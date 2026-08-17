@@ -51,11 +51,20 @@ def is_agent(user: str | None = None) -> bool:
     :return: Whether `user` is an agent
     """
     user = user or frappe.session.user
+    roles = frappe.get_roles(user)
+    agent_roles = {
+        "Agent",
+        "Agent Manager",
+        "HD Agent",
+        "HD Manager",
+        "System Manager",
+        "Administrator",
+    }
+    if is_admin(user) or bool(set(roles).intersection(agent_roles)):
+        return True
     return (
-        is_admin()
-        or "Agent Manager" in frappe.get_roles(user)
-        or "Agent" in frappe.get_roles(user)
-        or bool(frappe.db.exists("HD Agent", {"name": user}))
+        bool(frappe.db.exists("HD Agent", {"name": user}))
+        or bool(frappe.db.exists("HD Agent", {"user": user}))
     )
 
 
@@ -70,7 +79,10 @@ def get_agent_name(user: str = None) -> str | None:
     :return: HD Agent name, or None if `user` is not an agent
     """
     user = user or frappe.session.user
-    return user if frappe.db.exists("HD Agent", user) else None
+    if frappe.db.exists("HD Agent", user):
+        return user
+    return frappe.db.get_value("HD Agent", {"user": user}, "name")
+
 
 
 def publish_event(

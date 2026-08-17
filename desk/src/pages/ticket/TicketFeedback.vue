@@ -100,6 +100,14 @@ const setValue = createResource({
     emit("update:open", false);
     ticket.reload();
   },
+  onError: (err: any) => {
+    ticket.reload();
+    const msg =
+      err?.messages?.[0] ||
+      err?.message ||
+      (typeof err === "string" ? err : err?.exc || __("Failed to update ticket"));
+    toast.error(msg);
+  },
 });
 watch(rating, (r) => {
   preset.value = null;

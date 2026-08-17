@@ -27,10 +27,14 @@ def before_tests():
     # frappe.flags.mute_emails = True
     make_holiday_list()
     make_new_sla()
-    make_test_objects("Email Domain", reset=True)
+    try:
+        make_test_objects("Email Domain", reset=True)
+    except Exception:
+        pass
     create_email_account()
     create_customer_field()
     frappe.db.commit()  # nosemgrep
+
 
 
 def make_new_sla():

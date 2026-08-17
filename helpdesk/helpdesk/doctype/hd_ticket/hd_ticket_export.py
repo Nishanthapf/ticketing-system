@@ -158,7 +158,7 @@ def export_ticket(ticket: str):
     if not attachments:
         frappe.local.response.filename = filename
         frappe.local.response.filecontent = pdf_content
-        frappe.local.response.type = "pdf"
+        frappe.local.response.type = "download"
         return
 
     buffer = io.BytesIO()

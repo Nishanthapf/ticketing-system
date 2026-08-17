@@ -35,6 +35,7 @@ export const useTicket = (ticketId: string): MapValue => {
             toast.success(__("Ticket updated successfully."));
           },
           onError: (error) => {
+            reloadTicket(ticketId);
             const msg = error.exc_type
               ? (error.messages || error.message || []).join(", ")
               : error.message;

@@ -123,6 +123,11 @@ class TestHDTicket(IntegrationTestCase):
         )
         self.assertEqual(len(notification), 2)
 
+        frappe.set_user(agent)
+        ticket.reply_via_agent(message="Agent reply before closing")
+        frappe.set_user("Administrator")
+
+        ticket.reload()
         ticket.status = "Resolved"
         ticket.save()
         self.assertTrue(ticket)
@@ -156,9 +161,15 @@ class TestHDTicket(IntegrationTestCase):
         ticket.save()
         self.assertTrue(ticket)
 
+        frappe.set_user(agent)
+        ticket.reply_via_agent(message="Agent reply before closing")
+        frappe.set_user("Administrator")
+
+        ticket.reload()
         ticket.status = "Resolved"
         ticket.save()
         self.assertTrue(ticket)
+
 
         ticket.status = "Closed"
         ticket.save()
@@ -596,6 +607,7 @@ class TestHDTicket(IntegrationTestCase):
 
         ticket.reload()
         with self.freeze_time(add_to_date(date, minutes=30)):
+            ticket.reply_via_agent(message="Test agent reply")
             ticket.status = "Resolved"
             ticket.save()
             self.assertEqual(ticket.resolution_time, 30 * 60)
@@ -1294,6 +1306,7 @@ class TestHDTicket(IntegrationTestCase):
 
         with self.freeze_time(add_to_date(date, minutes=10)):
             ticket.reload()
+            ticket.reply_via_agent(message="Test reply")
             ticket.status = "Resolved"
             ticket.save()
             self.assertEqual(ticket.agreement_status, "Fulfilled")
@@ -1346,6 +1359,7 @@ class TestHDTicket(IntegrationTestCase):
 
         with self.freeze_time(add_to_date(date, minutes=135)):
             ticket.reload()
+            ticket.reply_via_agent(message="Test reply")
             ticket.status = "Resolved"
             ticket.save()
             ticket.reload()
@@ -1538,11 +1552,46 @@ class TestHDTicket(IntegrationTestCase):
         finally:
             frappe.db.set_single_value("HD Settings", previous_settings)
 
+    def test_mandatory_reply_on_close(self):
+        """
+        Test that closing or resolving a ticket without an agent reply raises a ValidationError,
+        and that sending an agent reply allows the ticket to be closed/resolved.
+        """
+        ticket = make_ticket(subject="Test Mandatory Reply")
+        ticket.reload()
+
+        # Attempting to resolve without reply throws ValidationError
+        ticket.status = "Resolved"
+        self.assertRaises(frappe.ValidationError, ticket.save)
+
+        ticket.reload()
+        # Attempting to close without reply throws ValidationError
+        ticket.status = "Closed"
+        self.assertRaises(frappe.ValidationError, ticket.save)
+
+        # Send an agent reply
+        ticket.reload()
+        frappe.set_user(agent)
+        ticket.reply_via_agent(message="Resolution details provided.")
+        frappe.set_user("Administrator")
+
+        # Now resolving and closing should succeed
+        ticket.reload()
+        ticket.status = "Resolved"
+        ticket.save()
+        self.assertEqual(ticket.status, "Resolved")
+
+        ticket.reload()
+        ticket.status = "Closed"
+        ticket.save()
+        self.assertEqual(ticket.status, "Closed")
+
     def tearDown(self):
         frappe.set_user("Administrator")
         remove_holidays()
         frappe.db.set_single_value("HD Settings", "default_ticket_status", "Open")
         frappe.delete_doc("HD Ticket Status", "New", force=True)
+
 
 
 class TestHDTicketEscalation(IntegrationTestCase):
@@ -2070,6 +2119,21 @@ class TestHDTicketEscalation(IntegrationTestCase):
             1,
             "Ticket B must not be affected by ticket A's escalation run",
         )
+
+    def test_export_ticket_download_response_type(self):
+        from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket_export import export_ticket
+
+        ticket = make_ticket(subject="Export Test Ticket")
+        frappe.set_user("Administrator")
+        frappe.local.response = frappe._dict()
+
+        export_ticket(ticket.name)
+
+        self.assertEqual(frappe.local.response.type, "download")
+        self.assertEqual(
+            frappe.local.response.filename, f"{ticket.name}_Ticket-Conversation.pdf"
+        )
+        self.assertTrue(len(frappe.local.response.filecontent) > 0)
 
     def tearDown(self):
         frappe.set_user("Administrator")

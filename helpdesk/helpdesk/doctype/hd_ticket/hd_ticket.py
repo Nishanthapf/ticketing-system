@@ -98,8 +98,38 @@ class HDTicket(Document):
 
     def validate(self):
         self.validate_feedback()
+        self.validate_reply_on_close()
         if self.agent_group:
             start_escalation_if_enabled(self)
+
+    def is_closing_status(self):
+        if not self.status:
+            return False
+        if self.status in ("Closed", "Resolved"):
+            return True
+        if self.status_category in ("Resolved", "Closed"):
+            return True
+        category = frappe.db.get_value("HD Ticket Status", self.status, "category")
+        return category in ("Resolved", "Closed")
+
+    def validate_reply_on_close(self):
+        if self.flags.ignore_validate or self.get("is_merged"):
+            return
+
+        try:
+            from helpdesk.helpdesk.api.nls_student import AUTO_CLOSE_TYPES
+            if self.get("ticket_type") in AUTO_CLOSE_TYPES:
+                return
+        except ImportError:
+            pass
+
+        if self.is_closing_status():
+            if not self.has_agent_replied:
+                frappe.throw(
+                    _("Reply is mandatory before closing or resolving the ticket. Please reply to the ticket first."),
+                    frappe.ValidationError,
+                )
+
 
     def before_save(self):
         self.apply_sla()
@@ -420,14 +450,20 @@ class HDTicket(Document):
 
     @property
     def has_agent_replied(self):
-        return frappe.db.exists(
-            "Communication",
-            {
-                "reference_doctype": "HD Ticket",
-                "reference_name": self.name,
-                "sent_or_received": "Sent",
-            },
+        return bool(
+            frappe.db.exists(
+                "Communication",
+                {
+                    "reference_doctype": "HD Ticket",
+                    "reference_name": self.name,
+                    "sent_or_received": "Sent",
+                    "communication_type": ["!=", "Automated Message"],
+                },
+            )
         )
+
+
+
 
     def validate_feedback(self):
         is_feedback_mandatory = frappe.get_cached_value(
@@ -1188,7 +1224,12 @@ class HDTicket(Document):
         # anymore as a communication is created when a ticket is created.
         self.description = self.description or c.content
         # Save the ticket, allowing for hooks to run.
-        self.save()
+        self.save(
+            ignore_permissions=c.get("ignore_permissions")
+            or c.flags.ignore_permissions
+            or self.flags.ignore_permissions
+        )
+
 
     def attach_file_with_doc(self, doctype, docname, file_url):
         if frappe.db.exists(

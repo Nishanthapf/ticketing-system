@@ -328,7 +328,6 @@ function showConfirmationDialog() {
         label: __("Confirm"),
         variant: "solid",
         onClick(close: Function) {
-          ticket.data.status = "Closed";
           setValue.submit(
             { fieldname: "status", value: "Closed" },
             {
@@ -358,6 +357,14 @@ const setValue = createResource({
   onSuccess: () => {
     showFeedbackDialog.value = false;
     ticket.reload();
+  },
+  onError: (err: any) => {
+    ticket.reload();
+    const msg =
+      err?.messages?.[0] ||
+      err?.message ||
+      (typeof err === "string" ? err : err?.exc || __("Failed to update ticket"));
+    toast.error(msg);
   },
 });
 
