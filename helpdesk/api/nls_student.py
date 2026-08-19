@@ -6,39 +6,39 @@ AUTO_CLOSE_TYPES = {"OOR Intimation", "Electric Appliance Declaration"}
 # Ticket type exclusively available to faculty/staff
 FACULTY_ONLY_TYPE = "Travel & Transportation"
 
-# Type of Issue options per ticket type
-ISSUE_OPTIONS = {
-	"Academics": ["Attendance", "Certificates", "Examination", "Letters", "Learning Material", "Projects", "Viva", "Others"],
-	"Facilities": ["Carpentry", "Electrical", "House Keeping", "Plumbing", "Security", "Others"],
-	"Finance": ["Fees", "Others"],
-	"IT": ["Admin Portal", "Gsuite", "Group Creation", "ID Card", "Internet Connectivity", "Learning Platform", "Microsoft Office", "Online Library Access", "Others"],
-	"PACE": ["Admission", "Academics", "Degree and Certificate", "Examination/Result", "Fee-related", "Grievance", "Technical Issues", "Transcripts"],
-}
+def _get_issue_options(ticket_type: str) -> list:
+	rows = frappe.get_all(
+		"HD Ticket Type Of Issue",
+		filters={"ticket_type": ticket_type, "enabled": 1},
+		fields=["name", "issue_name"],
+		order_by="issue_name asc",
+	)
+	return [{"label": r.issue_name, "value": r.name} for r in rows]
 
 
 @frappe.whitelist()
 def get_issue_options_academics() -> list:
-	return [{"label": o, "value": o} for o in ISSUE_OPTIONS["Academics"]]
+	return _get_issue_options("Academics")
 
 
 @frappe.whitelist()
 def get_issue_options_facilities() -> list:
-	return [{"label": o, "value": o} for o in ISSUE_OPTIONS["Facilities"]]
+	return _get_issue_options("Facilities")
 
 
 @frappe.whitelist()
 def get_issue_options_finance() -> list:
-	return [{"label": o, "value": o} for o in ISSUE_OPTIONS["Finance"]]
+	return _get_issue_options("Finance")
 
 
 @frappe.whitelist()
 def get_issue_options_it() -> list:
-	return [{"label": o, "value": o} for o in ISSUE_OPTIONS["IT"]]
+	return _get_issue_options("IT")
 
 
 @frappe.whitelist()
 def get_issue_options_pace() -> list:
-	return [{"label": o, "value": o} for o in ISSUE_OPTIONS["PACE"]]
+	return _get_issue_options("PACE")
 
 
 @frappe.whitelist()

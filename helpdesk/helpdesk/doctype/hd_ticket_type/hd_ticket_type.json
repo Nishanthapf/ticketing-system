@@ -16,8 +16,7 @@
   "priority",
   "team",
   "year_wise_assignment_rules",
-  "pace_year_wise_assignment_rules",
-  "type_of_issue_assignment_rules"
+  "pace_year_wise_assignment_rules"
  ],
  "fields": [
   {
@@ -52,14 +51,6 @@
    "label": "PACE Programme / Year-wise Assignment Rules",
    "options": "PACE Ticket Type Assignment Rule",
    "allow_in_quick_entry": 0
-  },
-  {
-   "fieldname": "type_of_issue_assignment_rules",
-   "fieldtype": "Table",
-   "label": "Type of Issue-wise Assignment Rules",
-   "options": "HD Ticket Type Of Issue Assignment Rule",
-   "allow_in_quick_entry": 0,
-   "description": "Checked first, before Programme/Year rules. If the ticket's Type of Issue matches a row here, its team wins outright."
   },
   {
    "default": "0",
