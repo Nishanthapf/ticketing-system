@@ -83,6 +83,20 @@
     "url_method": null
    },
    {
+    "fieldname": "custom_preferred_visit_date",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_preferred_visit_time",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
     "fieldname": "custom_oor_type",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -512,6 +526,20 @@
    },
    {
     "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_preferred_visit_date",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_preferred_visit_time",
     "hide_from_customer": 0,
     "placeholder": null,
     "required": 1,

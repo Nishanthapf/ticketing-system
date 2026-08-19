@@ -153,10 +153,42 @@
  {
   "doctype": "Custom Field",
   "dt": "HD Ticket",
+  "fieldname": "custom_preferred_visit_date",
+  "fieldtype": "Date",
+  "label": "Preferred Visit Date",
+  "insert_after": "custom_room_no",
+  "description": "Room visits are scheduled within 24 hours of raising the ticket, during working hours.",
+  "depends_on": "eval:doc.ticket_type=='Facilities'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Facilities'",
+  "name": "HD Ticket-custom_preferred_visit_date"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_col_break_visit",
+  "fieldtype": "Column Break",
+  "insert_after": "custom_preferred_visit_date",
+  "depends_on": "eval:doc.ticket_type=='Facilities'",
+  "name": "HD Ticket-custom_col_break_visit"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_preferred_visit_time",
+  "fieldtype": "Time",
+  "label": "Preferred Visit Time",
+  "insert_after": "custom_col_break_visit",
+  "depends_on": "eval:doc.ticket_type=='Facilities'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Facilities'",
+  "name": "HD Ticket-custom_preferred_visit_time"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
   "fieldname": "custom_oor_section",
   "fieldtype": "Section Break",
   "label": "Out of Residence Details",
-  "insert_after": "custom_room_no",
+  "insert_after": "custom_preferred_visit_time",
   "depends_on": "eval:doc.ticket_type=='OOR Intimation'",
   "name": "HD Ticket-custom_oor_section"
  },

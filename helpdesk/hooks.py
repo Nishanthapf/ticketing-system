@@ -113,6 +113,11 @@ fixtures = [
         "doctype": "Custom Field",
         "filters": [["name", "like", "HD Ticket-custom_%"]]
     },
+    # Facility visit scheduling config on HD Settings (Ticket Settings tab)
+    {
+        "doctype": "Custom Field",
+        "filters": [["name", "like", "HD Settings-facility_visit_%"]]
+    },
     # Clear link_filters on ticket_type, priority, agent_group — prevents
     # JSONDecodeError / PermissionError for portal users (All role has only
     # 'select' on HD Ticket Type, not 'read', so filtering by 'disabled' fails)
