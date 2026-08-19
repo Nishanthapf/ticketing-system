@@ -54,10 +54,7 @@
         </UniInput>
       </div>
       <!-- existing fields -->
-      <div
-        class="flex flex-col"
-        :class="(subject.length >= 2 || description.length) && 'gap-5'"
-      >
+      <div class="flex flex-col gap-5">
         <div class="flex flex-col gap-2">
           <span class="block text-sm text-ink-gray-6">
             {{ __("Subject") }}
@@ -76,18 +73,11 @@
           class="shadow"
         />
         <div v-if="isCustomerPortal">
-          <h4
-            v-show="subject.length <= 2 && description.length === 0"
-            class="text-p-sm text-ink-gray-4 ms-1"
-          >
-            {{ __("Please enter a subject to continue") }}
-          </h4>
           <TicketTextEditor
-            v-show="subject.length > 2 || description.length > 0"
             ref="editor"
             v-model:attachments="attachments"
             v-model:content="description"
-            :placeholder="__('Detailed explanation')"
+            :placeholder="__('Description')"
             expand
             :uploadFunction="(file:any)=>uploadFunction(file)"
           >
