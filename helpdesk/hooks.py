@@ -173,7 +173,10 @@ doc_events = {
     },
     # Auto-close OOR Intimation and Electric Appliance Declaration on creation
     "HD Ticket": {
-        "after_insert": "helpdesk.api.nls_student.auto_close_intimation_ticket",
+        "after_insert": [
+            "helpdesk.api.nls_student.auto_close_intimation_ticket",
+            "helpdesk.api.nls_student.create_transcript_request_on_ticket",
+        ],
     },
 }
 

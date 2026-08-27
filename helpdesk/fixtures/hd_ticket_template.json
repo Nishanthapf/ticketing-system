@@ -195,7 +195,7 @@
     "url_method": null
    },
    {
-    "fieldname": "custom_subject_class_hours",
+    "fieldname": "custom_condonation_course",
     "hide_from_customer": 0,
     "placeholder": null,
     "required": 0,
@@ -381,6 +381,34 @@
     "hide_from_customer": 0,
     "placeholder": null,
     "required": 0,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_transcript_type",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": "helpdesk.api.nls_student.get_transcript_types"
+   },
+   {
+    "fieldname": "custom_transcript_num_copies",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_transcript_delivery_mode",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_transcript_purpose",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
     "url_method": null
    }
   ],
@@ -1357,7 +1385,7 @@
     "url_method": null
    },
    {
-    "fieldname": "custom_subject_class_hours",
+    "fieldname": "custom_condonation_course",
     "hide_from_customer": 0,
     "placeholder": null,
     "required": 1,

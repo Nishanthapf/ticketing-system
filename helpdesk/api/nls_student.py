@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 
 AUTO_CLOSE_TYPES = {"OOR Intimation", "Electric Appliance Declaration"}
@@ -39,6 +40,23 @@ def get_issue_options_it() -> list:
 @frappe.whitelist()
 def get_issue_options_pace() -> list:
 	return _get_issue_options("PACE")
+
+
+@frappe.whitelist()
+def get_issue_names_for_ticket_type(ticket_type: str) -> list:
+	"""
+	Returns HD Ticket Type Of Issue names (docnames) enabled for the given
+	ticket_type. Used by the form script to scope the "Type of Issue" Link
+	field via applyFilters, since link_filters on the Custom Field can't
+	reference the current form's ticket_type at query time.
+	"""
+	if not ticket_type:
+		return []
+	return frappe.get_all(
+		"HD Ticket Type Of Issue",
+		filters={"ticket_type": ticket_type, "enabled": 1},
+		pluck="name",
+	)
 
 
 @frappe.whitelist()
@@ -323,6 +341,59 @@ def _get_student_master_context(user: str) -> dict:
 
 
 @frappe.whitelist()
+def get_student_current_term_courses() -> list:
+	"""
+	Returns the logged-in student's enrolled courses for their current term,
+	as Autocomplete options. Used by the Attendance Condonation ticket form
+	to restrict the Course field to subjects the student is actually taking.
+
+	The "current term" is taken as the student's most recently updated
+	Student Enrollment record with status = Enrolled (term_name on Student
+	Master is free text and doesn't reliably match Student Enrollment's
+	term_name, so we don't try to match on it).
+
+	Returns an empty list for Guest users, non-students, or students with
+	no Enrolled Student Enrollment record.
+	"""
+	user = frappe.session.user
+	if not user or user == "Guest":
+		return []
+
+	student = frappe.db.get_value("Student Master", {"user": user}, "name") \
+		or frappe.db.get_value("Student Master", {"email": user}, "name") \
+		or frappe.db.get_value("Student Master", {"official_email_id": user}, "name")
+
+	if not student:
+		return []
+
+	enrollment = frappe.db.get_value(
+		"Student Enrollment",
+		{"student": student, "status": "Enrolled"},
+		"name",
+		order_by="modified desc",
+	)
+	if not enrollment:
+		return []
+
+	rows = frappe.get_all(
+		"Student Enrollment Course",
+		filters={"parent": enrollment, "parenttype": "Student Enrollment"},
+		fields=["course", "course_offering"],
+	)
+
+	seen = set()
+	options = []
+	for r in rows:
+		course = r.course or r.course_offering
+		if not course or course in seen:
+			continue
+		seen.add(course)
+		options.append({"label": course, "value": course})
+
+	return options
+
+
+@frappe.whitelist()
 def get_in_campus_students() -> list:
 	"""
 	Returns all active in-campus (hosteller) students as Autocomplete options.
@@ -442,3 +513,334 @@ def auto_close_intimation_ticket(doc, method=None):
 
 	frappe.db.set_value("HD Ticket", doc.name, "status", closed_status)
 	doc.reload()
+
+
+TRANSCRIPT_TICKET_TYPE = "Transcript Request"
+
+# The Helpdesk ticket form only offers "Final Transcript" today, but shows it
+# to students as "Provisional Transcript" — the stored value has to stay
+# "Final Transcript" to match Transcript Request / Transcript Fee Settings /
+# the student portal page, all of which already use that value in live data.
+TRANSCRIPT_TYPE_DISPLAY_LABELS = {
+	"Final Transcript": "Provisional Transcript",
+}
+
+
+def _transcript_type_label(transcript_type):
+	return TRANSCRIPT_TYPE_DISPLAY_LABELS.get(transcript_type, transcript_type)
+
+
+@frappe.whitelist()
+def get_transcript_types() -> list:
+	"""
+	url_method for the Transcript Type field on the Helpdesk ticket form.
+	Returns {label, value} pairs so the field renders as an Autocomplete with
+	a friendlier label ("Provisional Transcript") while still submitting the
+	underlying value ("Final Transcript") that Transcript Request / Transcript
+	Fee Settings / the student portal already store and key off of.
+	"""
+	return [
+		{"label": _transcript_type_label(v), "value": v}
+		for v in TRANSCRIPT_TYPE_DISPLAY_LABELS
+	]
+
+
+def create_transcript_request_on_ticket(doc, method=None):
+	"""
+	doc_event: HD Ticket after_insert.
+
+	Two paths, both ending with the ticket linked to a Transcript Request via
+	custom_transcript_request (same doc that /student-portal/transcript-request
+	creates — fee calculation, Razorpay payment, auto-approval, and PDF
+	generation all reuse that existing, already-tested implementation):
+
+	1. Pay-first (normal path): the New Ticket form already walked the student
+	   through create_request() + initiate_payment() + confirm_payment() for
+	   this exact Transcript Request before Submit was even enabled, so
+	   doc.custom_transcript_request arrives pre-set and already Paid. This
+	   function just verifies that server-side (ownership + payment status —
+	   never trusts the client) and links it. No second charge, no new
+	   request created.
+	2. Fallback (ticket created without going through that flow — API, email,
+	   or a client that hasn't loaded the payment step): behaves like before,
+	   creating an unpaid Transcript Request and posting a pay-link comment.
+	"""
+	if doc.ticket_type != TRANSCRIPT_TICKET_TYPE:
+		return
+
+	try:
+		import slcm.api.transcript_request as tr_api
+	except ImportError:
+		frappe.log_error(
+			title="Transcript Request ticket: slcm app not available",
+			message=frappe.get_traceback(),
+		)
+		return
+
+	prepaid_request = doc.get("custom_transcript_request")
+	if prepaid_request:
+		_link_prepaid_transcript_request(doc, prepaid_request)
+		return
+
+	transcript_type = doc.get("custom_transcript_type")
+	if not transcript_type:
+		# Template marks this field required, so this should not happen via
+		# the portal form; guard anyway for tickets created via API/email.
+		# Agent-only note — the student can't act on a missing-field
+		# diagnostic; give them a generic message instead.
+		_post_ticket_comment(
+			doc.name,
+			_(
+				"This ticket is missing the Transcript Type field, so a "
+				"Transcript Request record could not be created automatically. "
+				"Please ask the student to resubmit via the portal, or set "
+				"custom_transcript_type and rerun the request manually."
+			),
+		)
+		_post_student_update(
+			doc.name,
+			_("We couldn't process your transcript request automatically. The Academic Office has been notified."),
+		)
+		return
+
+	try:
+		result = tr_api._create_request(
+			transcript_type,
+			num_copies=doc.get("custom_transcript_num_copies") or 1,
+			purpose=doc.get("custom_transcript_purpose") or "",
+			delivery_mode=doc.get("custom_transcript_delivery_mode") or "Soft Copy (PDF)",
+			helpdesk_ticket=doc.name,
+		)
+	except frappe.ValidationError as e:
+		# Business-rule rejection (duplicate open request, not yet a graduate,
+		# transcript type disabled, etc.) — surface it on the ticket instead
+		# of failing ticket creation, so the student still has a place to see
+		# why nothing happened next.
+		_post_student_update(doc.name, _("Could not create the transcript request: {0}").format(str(e)))
+		return
+	except Exception:
+		frappe.log_error(title="Transcript Request auto-create failed", message=frappe.get_traceback())
+		_post_student_update(
+			doc.name,
+			_(
+				"Something went wrong while creating your transcript request. "
+				"Please contact the Academic Office."
+			),
+		)
+		return
+
+	frappe.db.set_value("HD Ticket", doc.name, "custom_transcript_request", result["name"])
+	doc.custom_transcript_request = result["name"]
+
+	type_label = _transcript_type_label(transcript_type)
+
+	if result.get("payment_required"):
+		pay_url = frappe.utils.get_url(
+			f"/student-portal/transcript-request?request={frappe.utils.quote(result['name'])}"
+		)
+		_post_student_update(
+			doc.name,
+			_(
+				"Fee for {0}: ₹{1}. Please complete payment to proceed — "
+				"<a href=\"{2}\" target=\"_blank\" rel=\"noopener noreferrer\">Pay Now</a>. "
+				"This request will be processed only after payment is confirmed."
+			).format(type_label, frappe.utils.fmt_money(result.get("fee_amount") or 0), pay_url),
+		)
+	else:
+		_post_student_update(
+			doc.name,
+			_("Your {0} request ({1}) has been submitted and does not require payment.").format(
+				type_label, result["name"]
+			),
+		)
+
+
+def _link_prepaid_transcript_request(doc, request_name):
+	"""
+	Verify (server-side, never trusting the client) that request_name is a
+	real Transcript Request belonging to the ticket's own raiser and is
+	either already Paid or doesn't require payment, then link it and set
+	helpdesk_ticket back-reference. If verification fails for any reason,
+	the ticket is NOT silently marked paid — it falls back to creating a
+	fresh unpaid request instead, same as if no prepaid id had been sent.
+	"""
+	row = frappe.db.get_value(
+		"Transcript Request",
+		request_name,
+		["name", "student", "payment_required", "payment_status", "status", "helpdesk_ticket",
+		 "transcript_type", "fee_amount"],
+		as_dict=True,
+	)
+
+	# Same resolution _require_student() uses in transcript_request.py — the
+	# ticket's raiser is who owns the Transcript Request created moments
+	# earlier by the same session during the pre-payment step.
+	student_name = None
+	for field in ("user", "email", "official_email_id"):
+		student_name = frappe.db.get_value("Student Master", {field: doc.raised_by}, "name")
+		if student_name:
+			break
+
+	verified = (
+		row
+		and student_name
+		and row.student == student_name
+		and row.status != "Cancelled"
+		and (not row.payment_required or row.payment_status == "Paid")
+		and not row.helpdesk_ticket  # not already claimed by another ticket
+	)
+
+	if not verified:
+		frappe.log_error(
+			title="Transcript Request prepaid link rejected",
+			message=(
+				f"Transcript Request ticket {doc.name}: prepaid request {request_name} "
+				f"failed verification (row={row}, student={student_name}) — falling back "
+				f"to creating a fresh unpaid request."
+			),
+		)
+		frappe.db.set_value("HD Ticket", doc.name, "custom_transcript_request", None)
+		doc.custom_transcript_request = None
+		create_transcript_request_on_ticket(doc)
+		return
+
+	frappe.db.set_value("Transcript Request", request_name, "helpdesk_ticket", doc.name)
+	type_label = _transcript_type_label(row.transcript_type)
+	if row.payment_required:
+		_post_student_update(
+			doc.name,
+			_("Payment of ₹{0} for {1} has been received. Your request has been submitted.").format(
+				frappe.utils.fmt_money(row.fee_amount or 0), type_label
+			),
+		)
+	else:
+		_post_student_update(
+			doc.name,
+			_("Your {0} request ({1}) has been submitted and does not require payment.").format(
+				type_label, request_name
+			),
+		)
+
+
+TRANSCRIPT_RESOLVED_STATUSES = {"Generated", "Delivered"}
+TRANSCRIPT_CLOSED_STATUSES = {"Rejected", "Cancelled"}
+
+
+def _transcript_status_message(status):
+	# Built at call time (not module import time) so _() translates using the
+	# current request's locale rather than whatever was active on import.
+	return {
+		"Payment Pending": _("Waiting for payment."),
+		"Submitted": _("Payment received. Your request has been submitted for review."),
+		"Under Review": _("Your request is under review by the Academic Office."),
+		"Approved": _("Your request has been approved and is being processed."),
+		"Generated": _("Your transcript has been generated. You can download it from the Documents page on the student portal."),
+		"Delivered": _("Your transcript has been delivered."),
+		"Rejected": _("Your request was rejected. Reason: {0}"),
+		"Cancelled": _("This request was cancelled."),
+	}.get(status)
+
+
+def sync_transcript_status_to_ticket(transcript_request_doc):
+	"""
+	Called from Transcript Request.on_update() (slcm side) whenever a
+	Transcript Request linked to a Helpdesk ticket changes status or payment
+	status. Posts a status comment and, for terminal outcomes, moves the
+	ticket into the corresponding HD Ticket Status category so it leaves the
+	agent's open queue automatically.
+	"""
+	ticket_name = transcript_request_doc.helpdesk_ticket
+	status = transcript_request_doc.status
+	payment_status = transcript_request_doc.payment_status
+
+	if payment_status == "Paid" and status == "Payment Pending":
+		# Fee captured but the status field hasn't rolled forward yet
+		# (rare race between webhook and status field save) — still worth
+		# telling the agent payment came in.
+		_post_student_update(ticket_name, _("Payment received (₹{0}).").format(
+			frappe.utils.fmt_money(transcript_request_doc.fee_amount or 0)
+		))
+
+	message = _transcript_status_message(status)
+	if message:
+		if status == "Rejected":
+			message = message.format(transcript_request_doc.rejection_reason or _("Not specified"))
+		_post_student_update(ticket_name, message)
+
+	target_category = None
+	if status in TRANSCRIPT_RESOLVED_STATUSES:
+		target_category = "Resolved"
+	elif status in TRANSCRIPT_CLOSED_STATUSES:
+		target_category = "Closed"
+
+	if not target_category:
+		return
+
+	target_status = frappe.db.get_value(
+		"HD Ticket Status", {"category": target_category}, "name"
+	)
+	if not target_status:
+		return
+
+	current_status = frappe.db.get_value("HD Ticket", ticket_name, "status")
+	if current_status == target_status:
+		return
+
+	frappe.db.set_value(
+		"HD Ticket", ticket_name,
+		{"status": target_status, "status_category": target_category},
+	)
+
+
+def _post_ticket_comment(ticket_name, content):
+	"""
+	Post an internal agent-only note (HD Ticket Comment). NOT visible to the
+	student — that doctype has no read permission for HD Customer/portal
+	roles, so anything posted here only ever shows up in the agent desk's
+	internal Comments tab. Use _post_student_update for anything the
+	student needs to see.
+	"""
+	try:
+		frappe.get_doc({
+			"doctype": "HD Ticket Comment",
+			"reference_ticket": ticket_name,
+			"commented_by": "Administrator",
+			"content": content,
+			"is_pinned": 1,
+		}).insert(ignore_permissions=True)
+	except Exception:
+		frappe.log_error(title="Transcript Request: could not post ticket comment", message=frappe.get_traceback())
+
+
+def _post_student_update(ticket_name, content):
+	"""
+	Post a student-visible system notice on the ticket (fee due, payment
+	received, status changes). Unlike _post_ticket_comment (HD Ticket
+	Comment — agent-only), this creates a Communication the same way an
+	agent's reply would, so it renders in the student's own "Activity"
+	thread on the portal.
+
+	communication_type "Automated Message" keeps this out of
+	HDTicket.has_agent_replied's count, so it can never be mistaken for a
+	real agent reply and doesn't let a ticket get closed without one.
+	"""
+	try:
+		ticket = frappe.db.get_value("HD Ticket", ticket_name, ["subject", "raised_by"], as_dict=True)
+		if not ticket:
+			return
+		frappe.get_doc({
+			"doctype": "Communication",
+			"communication_type": "Automated Message",
+			"communication_medium": "",
+			"sent_or_received": "Sent",
+			"content": content,
+			"subject": f"Re: {ticket.subject}",
+			"sender": "Administrator",
+			"user": "Administrator",
+			"recipients": ticket.raised_by,
+			"status": "Linked",
+			"reference_doctype": "HD Ticket",
+			"reference_name": ticket_name,
+		}).insert(ignore_permissions=True)
+	except Exception:
+		frappe.log_error(title="Transcript Request: could not post student update", message=frappe.get_traceback())

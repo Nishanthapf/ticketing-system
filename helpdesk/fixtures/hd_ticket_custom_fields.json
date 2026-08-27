@@ -106,7 +106,7 @@
   "label": "Type of Issue",
   "insert_after": "custom_category_section",
   "options": "HD Ticket Type Of Issue",
-  "link_filters": "{\"ticket_type\":[\"=\",\"eval:doc.ticket_type\"],\"enabled\":[\"=\",1]}",
+  "link_filters": "{\"enabled\":[\"=\",1]}",
   "depends_on": "eval:['Academics','Facilities','Finance','IT','PACE'].includes(doc.ticket_type)",
   "mandatory_depends_on": "eval:['Academics','Facilities','Finance','IT','PACE'].includes(doc.ticket_type)",
   "name": "HD Ticket-custom_type_of_issue"
@@ -353,7 +353,7 @@
   "fieldtype": "Select",
   "label": "Category",
   "insert_after": "custom_condonation_section",
-  "options": "\nMedical\nBereavement\nCritical Illness in Family\nMenstrual Leave",
+  "options": "\nMedical\nBereavement\nCritical Illness in Immediate Family\nMenstrual Leave",
   "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
   "name": "HD Ticket-custom_condonation_category"
  },
@@ -380,12 +380,13 @@
  {
   "doctype": "Custom Field",
   "dt": "HD Ticket",
-  "fieldname": "custom_subject_class_hours",
-  "fieldtype": "Small Text",
-  "label": "Subject & Class Hours Missed",
+  "fieldname": "custom_condonation_course",
+  "fieldtype": "Select",
+  "label": "Course",
+  "options": "",
   "insert_after": "custom_condonation_end_date",
   "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
-  "name": "HD Ticket-custom_subject_class_hours"
+  "name": "HD Ticket-custom_condonation_course"
  },
  {
   "doctype": "Custom Field",
@@ -393,7 +394,7 @@
   "fieldname": "custom_nomination_section",
   "fieldtype": "Section Break",
   "label": "Nomination Details",
-  "insert_after": "custom_subject_class_hours",
+  "insert_after": "custom_condonation_course",
   "depends_on": "eval:doc.ticket_type=='Nominations'",
   "name": "HD Ticket-custom_nomination_section"
  },
@@ -748,5 +749,76 @@
   "insert_after": "custom_transport_extra_charges",
   "depends_on": "eval:doc.ticket_type=='Travel & Transportation'",
   "name": "HD Ticket-custom_transport_remarks"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transcript_section",
+  "fieldtype": "Section Break",
+  "label": "Transcript Request Details",
+  "insert_after": "custom_transport_remarks",
+  "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "name": "HD Ticket-custom_transcript_section"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transcript_type",
+  "fieldtype": "Select",
+  "label": "Transcript Type",
+  "options": "Final Transcript",
+  "default": "Final Transcript",
+  "description": "Only \"Final Transcript\" is offered from Helpdesk today. Displayed to the student as \"Provisional Transcript\" via a form-script label override; the stored value stays \"Final Transcript\" to match the existing Transcript Request / Transcript Fee Settings / portal feature.",
+  "insert_after": "custom_transcript_section",
+  "reqd": 1,
+  "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "name": "HD Ticket-custom_transcript_type"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transcript_num_copies",
+  "fieldtype": "Int",
+  "label": "Number of Copies",
+  "default": "1",
+  "insert_after": "custom_transcript_type",
+  "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "name": "HD Ticket-custom_transcript_num_copies"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transcript_delivery_mode",
+  "fieldtype": "Select",
+  "label": "Delivery Mode",
+  "options": "Soft Copy (PDF)\nHard Copy (Physical)\nBoth",
+  "default": "Soft Copy (PDF)",
+  "insert_after": "custom_transcript_num_copies",
+  "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "name": "HD Ticket-custom_transcript_delivery_mode"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transcript_purpose",
+  "fieldtype": "Small Text",
+  "label": "Purpose",
+  "insert_after": "custom_transcript_delivery_mode",
+  "reqd": 1,
+  "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "name": "HD Ticket-custom_transcript_purpose"
+ },
+ {
+  "doctype": "Custom Field",
+  "dt": "HD Ticket",
+  "fieldname": "custom_transcript_request",
+  "fieldtype": "Link",
+  "label": "Transcript Request Record",
+  "options": "Transcript Request",
+  "insert_after": "custom_transcript_purpose",
+  "read_only": 1,
+  "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "description": "Auto-created on ticket submission. Payment and approval status live here.",
+  "name": "HD Ticket-custom_transcript_request"
  }
 ]

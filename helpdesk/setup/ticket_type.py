@@ -25,6 +25,7 @@ NLS_TICKET_TYPES = {
     "Nominations": "Self-nomination for a student body post with statement of purpose.",
     "SBA Committee Application": "Application to join an SBA committee — includes three questions and comments.",
     "Attendance Condonation Under AER": "Application for attendance condonation under AER for medical, bereavement, critical illness, or menstrual leave reasons.",
+    "Transcript Request": "Request for an academic transcript, consolidated marksheet, or duplicate/digital copy. A fee applies and payment is required before the request is processed.",
     "Grade": "Issues related to grades for a specific subject.",
     "Internship": "Issues related to internship matters.",
     "Electives": "Issues related to elective course selection or matters.",

@@ -53,6 +53,18 @@
           </template>
         </UniInput>
       </div>
+      <!-- Transcript Request: fee + payment, must complete before Submit unlocks -->
+      <TranscriptPaymentPanel
+        v-if="requiresPrepayment"
+        ref="paymentPanel"
+        :transcript-type="templateFields.custom_transcript_type"
+        :num-copies="templateFields.custom_transcript_num_copies"
+        :purpose="templateFields.custom_transcript_purpose"
+        :delivery-mode="templateFields.custom_transcript_delivery_mode"
+        :reset-key="paymentResetKey"
+        @paid="onTranscriptPaid"
+      />
+
       <!-- existing fields -->
       <div class="flex flex-col gap-5">
         <div class="flex flex-col gap-2">
@@ -87,7 +99,10 @@
                 theme="gray"
                 variant="solid"
                 :disabled="
-                  $refs.editor.editor.isEmpty || ticket.loading || !subject
+                  $refs.editor.editor.isEmpty ||
+                  ticket.loading ||
+                  !subject ||
+                  (requiresPrepayment && !transcriptPaid)
                 "
                 @click="() => ticket.submit()"
               />
@@ -111,7 +126,10 @@
               theme="gray"
               variant="solid"
               :disabled="
-                $refs.editor.editor.isEmpty || ticket.loading || !subject
+                $refs.editor.editor.isEmpty ||
+                ticket.loading ||
+                !subject ||
+                (requiresPrepayment && !transcriptPaid)
               "
               @click="() => ticket.submit()"
             />
@@ -147,9 +165,10 @@ import {
 } from "frappe-ui";
 import { useOnboarding } from "frappe-ui/frappe";
 import sanitizeHtml from "sanitize-html";
-import { computed, defineAsyncComponent, onMounted, reactive, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import SearchArticles from "../../components/SearchArticles.vue";
+import TranscriptPaymentPanel from "../../components/TranscriptPaymentPanel.vue";
 
 const TicketTextEditor = defineAsyncComponent(
   () => import("./TicketTextEditor.vue")
@@ -172,6 +191,70 @@ const subject = ref("");
 const description = ref("");
 const attachments = ref([]);
 const templateFields = reactive({});
+
+// "Transcript Request" pays before the ticket exists (via TranscriptPaymentPanel,
+// which creates the real Transcript Request + Razorpay payment using the same
+// endpoints the student portal payment page uses), instead of the default
+// create-ticket-then-pay-via-comment flow other ticket types use. Submit stays
+// disabled until transcriptPaid is true.
+const requiresPrepayment = computed(
+  () => templateFields.ticket_type === "Transcript Request"
+);
+const transcriptPaid = ref(false);
+const paidTranscriptRequest = ref<string | null>(null);
+const paymentPanel = ref<InstanceType<typeof TranscriptPaymentPanel> | null>(null);
+// Snapshot of (transcript type, copies) the current paid/resumed request was
+// created against — used to tell a genuine student-initiated change apart
+// from the auto-populate write the "Transcript Request" ticket_type
+// onChange handler makes ~50ms after mount (see the NLS Student Ticket
+// Auto-populate form script), which would otherwise look identical to the
+// watcher below and wrongly discard a just-resumed paid request.
+const paidForValues = ref<string | null>(null);
+// Bumped to tell the payment panel to discard whatever request it already
+// created/paid and start over, whenever an input the fee/eligibility
+// depends on changes after a payment was already made for the old values.
+const paymentResetKey = ref(0);
+
+watch(
+  () => [
+    templateFields.custom_transcript_type,
+    templateFields.custom_transcript_num_copies,
+  ],
+  ([type, copies]) => {
+    if (!transcriptPaid.value) return;
+    const current = JSON.stringify([type, copies]);
+    if (current === paidForValues.value) return; // the resume/auto-populate write itself
+    transcriptPaid.value = false;
+    paidTranscriptRequest.value = null;
+    paidForValues.value = null;
+    paymentResetKey.value++;
+  }
+);
+
+function onTranscriptPaid(payload: {
+  requestName: string;
+  feeAmount: number;
+  transcriptType: string;
+  numCopies: number | string;
+  purpose?: string;
+  deliveryMode?: string;
+}) {
+  transcriptPaid.value = true;
+  paidTranscriptRequest.value = payload.requestName;
+  // Sourced from the server response (what the paid request actually is),
+  // not templateFields — avoids a race with the "Transcript Request"
+  // onChange auto-populate that runs ~50ms after mount and could otherwise
+  // make a just-resumed paid request look stale before it's even rendered.
+  paidForValues.value = JSON.stringify([payload.transcriptType, payload.numCopies]);
+  templateFields.custom_transcript_type = payload.transcriptType;
+  templateFields.custom_transcript_num_copies = payload.numCopies;
+  templateFields.custom_transcript_request = payload.requestName;
+  // Only present when resuming an already-paid request — backfill the
+  // fields so Subject/Submit validation isn't blocked by fields the student
+  // filled in during a session that got interrupted after payment.
+  if (payload.purpose) templateFields.custom_transcript_purpose = payload.purpose;
+  if (payload.deliveryMode) templateFields.custom_transcript_delivery_mode = payload.deliveryMode;
+}
 
 const template = createResource({
   url: "helpdesk.helpdesk.doctype.hd_ticket_template.api.get_one",
