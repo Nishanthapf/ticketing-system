@@ -48,7 +48,7 @@
   "dt": "HD Ticket",
   "fieldname": "custom_programme",
   "fieldtype": "Data",
-  "label": "Program",
+  "label": "Programme",
   "insert_after": "custom_col_break_student_1",
   "read_only": 1,
   "name": "HD Ticket-custom_programme",
