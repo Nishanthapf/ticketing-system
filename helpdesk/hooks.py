@@ -135,10 +135,9 @@ fixtures = [
         "filters": [["name", "in", [
             "Default",
             "Academics", "Facilities", "Finance", "Food and Beverage",
-            "IT", "Library", "Library Book Request", "Stores Request", "PACE",
-            "OOR Intimation", "Electric Appliance Declaration", "Nominations",
-            "SBA Committee Application", "Attendance Condonation Under AER",
-            "Grade", "Internship", "Electives", "Roommate Intimation",
+            "IT", "Library", "Stores Request", "PACE",
+            "OOR Intimation", "Electric Appliance Declaration",
+            "Attendance Condonation Under AER",
             "Travel & Transportation"
         ]]]
     },

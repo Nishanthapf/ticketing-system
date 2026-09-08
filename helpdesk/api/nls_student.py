@@ -7,6 +7,10 @@ AUTO_CLOSE_TYPES = {"OOR Intimation", "Electric Appliance Declaration"}
 # Ticket type exclusively available to faculty/staff
 FACULTY_ONLY_TYPE = "Travel & Transportation"
 
+# Ticket types restricted to System Manager — never offered to anyone else (students,
+# faculty, agents/support staff included) via the portal or the ticket_type url_method
+SYSTEM_MANAGER_ONLY_TYPES = {"Stores Request"}
+
 def _get_issue_options(ticket_type: str) -> list:
 	rows = frappe.get_all(
 		"HD Ticket Type Of Issue",
@@ -67,12 +71,17 @@ def get_ticket_types() -> list:
 	search_link + disabled-field permission error for portal users.
 
 	Role-based filtering:
-	  - PACE Applicant  → PACE and Technical Issue ticket types only.
-	  - slcm_Student    → All ticket types EXCEPT "Travel & Transportation"
-	                       (that type is reserved for faculty / staff).
-	  - Everyone else   → All enabled ticket types.
+	  - PACE Applicant   → PACE and Technical Issue ticket types only.
+	  - slcm_Student     → All ticket types EXCEPT "Travel & Transportation"
+	                        (reserved for faculty/staff).
+	  - slcm_Faculty     → ONLY "Travel & Transportation".
+	  - System Manager   → All enabled ticket types, including SYSTEM_MANAGER_ONLY_TYPES.
+	  - Everyone else    → All enabled ticket types EXCEPT SYSTEM_MANAGER_ONLY_TYPES
+	                        (e.g. "Stores Request" — System Manager only, hidden even
+	                        from agents/support staff).
 	"""
 	user_roles = frappe.get_roles(frappe.session.user)
+	is_system_manager = "System Manager" in user_roles
 
 	# PACE Applicants can only raise PACE or Technical Issue tickets
 	if "PACE Applicant" in user_roles:
@@ -93,10 +102,12 @@ def get_ticket_types() -> list:
 		ignore_permissions=True,
 	)
 
+	if not is_system_manager:
+		types = [t for t in types if t.name not in SYSTEM_MANAGER_ONLY_TYPES]
+
 	# Students cannot raise Travel & Transportation tickets
-	STUDENT_HIDDEN_TYPES = {FACULTY_ONLY_TYPE}
 	if "slcm_Student" in user_roles:
-		types = [t for t in types if t.name not in STUDENT_HIDDEN_TYPES]
+		types = [t for t in types if t.name != FACULTY_ONLY_TYPE]
 
 	# Faculty can ONLY raise Travel & Transportation tickets
 	if "slcm_Faculty" in user_roles:

@@ -2,15 +2,11 @@ import frappe
 
 TICKET_TYPE_TEAM_MAP = {
     "Academics": "Academics Team",
-    "Electives": "Electives Team",
     "Facilities": "Facilities Team",
     "Finance": "Finance Team",
     "Food and Beverage": "Food and Beverage Team",
-    "Grade": "Grade Team",
-    "Internship": "Internship Team",
     "IT": "IT Team",
     "Library": "Library Team",
-    "Library Book Request": "Library Team",
     "PACE": "PACE Team",
     "Stores Request": "Stores Team",
     "Technical Issue": "PACE Team",

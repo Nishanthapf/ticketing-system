@@ -50,7 +50,8 @@
    "fieldtype": "Table",
    "label": "PACE Programme / Year-wise Assignment Rules",
    "options": "PACE Ticket Type Assignment Rule",
-   "allow_in_quick_entry": 0
+   "allow_in_quick_entry": 0,
+   "depends_on": "eval:doc.team=='PACE Team'"
   },
   {
    "default": "0",

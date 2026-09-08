@@ -52,3 +52,4 @@ helpdesk.patches.create_ootb_teams_if_missing
 helpdesk.helpdesk.doctype.hd_ticket.patches.backfill_resolved_on
 helpdesk.patches.create_escalation_email_templates_if_missing
 helpdesk.patches.create_transcript_request_ticket_type
+helpdesk.patches.remove_unused_ticket_types
