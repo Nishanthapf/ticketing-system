@@ -137,7 +137,6 @@ fixtures = [
             "Academics", "Facilities", "Finance", "Food and Beverage",
             "IT", "Library", "Stores Request", "PACE",
             "OOR Intimation", "Electric Appliance Declaration",
-            "Attendance Condonation Under AER",
             "Travel & Transportation"
         ]]]
     },

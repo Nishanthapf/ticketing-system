@@ -477,6 +477,34 @@
     "placeholder": null,
     "required": 1,
     "url_method": null
+   },
+   {
+    "fieldname": "custom_condonation_category",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_condonation_start_date",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_condonation_end_date",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_condonation_course",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
    }
   ],
   "modified": "2026-06-01 12:59:52.262984",
@@ -1314,87 +1342,6 @@
   "modified": "2026-06-01 12:59:52.363140",
   "name": "SBA Committee Application",
   "template_name": "SBA Committee Application"
- },
- {
-  "about": "<p><strong>Note:</strong> Your application will be considered at the end of the Trimester only if your attendance in the concerned subject is at least 66%.</p><p>Only One attachment is permitted. Please merge your supporting documents into one document and upload.</p>",
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_term",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_condonation_category",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_condonation_start_date",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_condonation_end_date",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_condonation_course",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.373126",
-  "name": "Attendance Condonation Under AER",
-  "template_name": "Attendance Condonation Under AER"
  },
  {
   "about": null,

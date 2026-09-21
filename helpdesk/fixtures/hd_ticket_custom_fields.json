@@ -343,7 +343,7 @@
   "fieldtype": "Section Break",
   "label": "Attendance Condonation Details",
   "insert_after": "custom_item_details",
-  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "depends_on": "eval:doc.custom_type_of_issue=='Academics-Attendance Condonation'",
   "name": "HD Ticket-custom_condonation_section"
  },
  {
@@ -354,7 +354,7 @@
   "label": "Category",
   "insert_after": "custom_condonation_section",
   "options": "\nMedical\nBereavement\nCritical Illness in Immediate Family\nMenstrual Leave",
-  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "depends_on": "eval:doc.custom_type_of_issue=='Academics-Attendance Condonation'",
   "name": "HD Ticket-custom_condonation_category"
  },
  {
@@ -364,7 +364,7 @@
   "fieldtype": "Date",
   "label": "Condonation Start Date",
   "insert_after": "custom_condonation_category",
-  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "depends_on": "eval:doc.custom_type_of_issue=='Academics-Attendance Condonation'",
   "name": "HD Ticket-custom_condonation_start_date"
  },
  {
@@ -374,7 +374,7 @@
   "fieldtype": "Date",
   "label": "Condonation End Date",
   "insert_after": "custom_condonation_start_date",
-  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "depends_on": "eval:doc.custom_type_of_issue=='Academics-Attendance Condonation'",
   "name": "HD Ticket-custom_condonation_end_date"
  },
  {
@@ -385,7 +385,7 @@
   "label": "Course",
   "options": "",
   "insert_after": "custom_condonation_end_date",
-  "depends_on": "eval:doc.ticket_type=='Attendance Condonation Under AER'",
+  "depends_on": "eval:doc.custom_type_of_issue=='Academics-Attendance Condonation'",
   "name": "HD Ticket-custom_condonation_course"
  },
  {

@@ -21,7 +21,6 @@ NLS_TICKET_TYPES = {
     "PACE": "Issues related to admission, academics, degree and certificate, examination/result, fee-related, grievance, technical issues, and transcripts for PACE students.",
     "OOR Intimation": "Out of Residence intimation — arriving late, night out, or out of station. No approval required; ticket auto-closes on submission.",
     "Electric Appliance Declaration": "Declaration of electric appliance in room. No approval required; ticket auto-closes on submission.",
-    "Attendance Condonation Under AER": "Application for attendance condonation under AER for medical, bereavement, critical illness, or menstrual leave reasons.",
     "Transcript Request": "Request for an academic transcript, consolidated marksheet, or duplicate/digital copy. A fee applies and payment is required before the request is processed.",
     "Travel & Transportation": "Request for campus vehicle / driver for official or personal travel — includes trip details, driver and car assignment, and trip log (KM, time, charges).",
     "Technical Issue": "Technical issues for PACE applicants — e.g. login, portal access, or application form problems.",
