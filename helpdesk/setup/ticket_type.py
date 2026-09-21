@@ -3,7 +3,7 @@ import frappe
 from helpdesk.consts import DEFAULT_TICKET_TYPE
 
 DT = "HD Ticket Type"
-TICKET_TYPES = ["Question", "Bug", "Incident"]
+TICKET_TYPES = ["Question", "Incident"]
 
 # NLS ticket types, seeded once on fresh install only (create-if-missing).
 # Deliberately NOT a fixture: HD Ticket Type has admin-managed child tables
