@@ -13,6 +13,13 @@
     "url_method": "helpdesk.api.nls_student.get_ticket_types"
    },
    {
+    "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
     "fieldname": "custom_student_name",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -70,13 +77,6 @@
    },
    {
     "fieldname": "custom_room_no",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_type_of_issue",
     "hide_from_customer": 0,
     "placeholder": null,
     "required": 0,
@@ -412,7 +412,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.249790",
+  "modified": "2026-09-24 12:00:00.000000",
   "name": "Default",
   "template_name": "Default"
  },
@@ -428,6 +428,13 @@
     "placeholder": null,
     "required": 1,
     "url_method": "helpdesk.api.nls_student.get_ticket_types"
+   },
+   {
+    "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
    },
    {
     "fieldname": "custom_student_id",
@@ -472,13 +479,6 @@
     "url_method": null
    },
    {
-    "fieldname": "custom_type_of_issue",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
     "fieldname": "custom_condonation_category",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -507,7 +507,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.262984",
+  "modified": "2026-09-24 12:00:00.000000",
   "name": "Academics",
   "template_name": "Academics"
  },
@@ -523,6 +523,13 @@
     "placeholder": null,
     "required": 1,
     "url_method": "helpdesk.api.nls_student.get_ticket_types"
+   },
+   {
+    "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
    },
    {
     "fieldname": "custom_student_id",
@@ -581,13 +588,6 @@
     "url_method": null
    },
    {
-    "fieldname": "custom_type_of_issue",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
     "fieldname": "custom_preferred_visit_date",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -602,7 +602,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.271428",
+  "modified": "2026-09-24 12:00:00.000000",
   "name": "Facilities",
   "template_name": "Facilities"
  },
@@ -618,6 +618,13 @@
     "placeholder": null,
     "required": 1,
     "url_method": "helpdesk.api.nls_student.get_ticket_types"
+   },
+   {
+    "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
    },
    {
     "fieldname": "custom_student_id",
@@ -653,16 +660,9 @@
     "placeholder": null,
     "required": 0,
     "url_method": null
-   },
-   {
-    "fieldname": "custom_type_of_issue",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.278511",
+  "modified": "2026-09-24 12:00:00.000000",
   "name": "Finance",
   "template_name": "Finance"
  },
@@ -733,6 +733,13 @@
     "url_method": "helpdesk.api.nls_student.get_ticket_types"
    },
    {
+    "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
     "fieldname": "custom_student_id",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -787,16 +794,9 @@
     "placeholder": null,
     "required": 0,
     "url_method": null
-   },
-   {
-    "fieldname": "custom_type_of_issue",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.295841",
+  "modified": "2026-09-24 12:00:00.000000",
   "name": "IT",
   "template_name": "IT"
  },
@@ -994,6 +994,13 @@
     "url_method": "helpdesk.api.nls_student.get_ticket_types"
    },
    {
+    "fieldname": "custom_type_of_issue",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 1,
+    "url_method": null
+   },
+   {
     "fieldname": "custom_student_id",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -1020,16 +1027,9 @@
     "placeholder": null,
     "required": 0,
     "url_method": null
-   },
-   {
-    "fieldname": "custom_type_of_issue",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.324044",
+  "modified": "2026-09-24 12:00:00.000000",
   "name": "PACE",
   "template_name": "PACE"
  },

@@ -110,7 +110,25 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  // Sort options A→Z by their visible label (case-insensitive) instead of
+  // search_link's docname order. A catch-all "Others"/"Other" stays last.
+  sortByLabel: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const CATCH_ALL_LABELS = ["other", "others"];
+
+function compareByLabel(a, b) {
+  const aLast = CATCH_ALL_LABELS.includes(String(a.label).trim().toLowerCase());
+  const bLast = CATCH_ALL_LABELS.includes(String(b.label).trim().toLowerCase());
+  if (aLast !== bLast) return aLast ? 1 : -1;
+  return String(a.label).localeCompare(String(b.label), undefined, {
+    sensitivity: "base",
+    numeric: true,
+  });
+}
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
@@ -182,6 +200,8 @@ const options = createResource({
         description: option?.description,
       };
     });
+
+    if (props.sortByLabel) allData.sort(compareByLabel);
 
     if (
       !props.hideMe &&

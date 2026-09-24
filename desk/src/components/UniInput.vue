@@ -69,6 +69,7 @@ const component = computed(() => {
       doctype: props.field.options,
       filters: props.field.filters,
       pageLength: 999,
+      sortByLabel: true,
     });
   } else if (props.field.fieldtype === "Select") {
     return h(Autocomplete, {
