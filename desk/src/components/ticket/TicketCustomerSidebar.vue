@@ -229,11 +229,6 @@ const ticketAdditionalInfo = computed(() => {
       label: "Team",
       value: ticket.data.agent_group || "-",
     },
-    {
-      fieldname: "priority",
-      label: "Priority",
-      value: ticket.data.priority,
-    },
   ];
   const custom_fields = ticket.data.template.fields
     .filter(

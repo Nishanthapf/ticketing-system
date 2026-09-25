@@ -9,15 +9,6 @@
       </span>
     </div>
 
-    <div class="flex items-center gap-4">
-      <span class="w-[150px] shrink-0 text-sm text-ink-gray-5">Priority</span>
-      <span
-        class="flex-1 truncate rounded border border-outline-gray-2 bg-surface-white px-2 py-1 text-base font-medium text-ink-gray-9"
-      >
-        {{ ticket.data.priority }}
-      </span>
-    </div>
-
     <div
       v-for="data in slaData"
       :key="data.label"
