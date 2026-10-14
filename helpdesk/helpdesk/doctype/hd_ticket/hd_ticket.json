@@ -75,7 +75,8 @@
   "customer_feedback_section",
   "feedback_rating",
   "feedback",
-  "feedback_extra"
+  "feedback_extra",
+  "reopen_reason"
  ],
  "fields": [
   {
@@ -553,7 +554,7 @@
  "icon": "fa fa-issue",
  "idx": 61,
  "links": [],
- "modified": "2026-06-28 13:51:31.692161",
+ "modified": "2026-10-14 13:13:33.804697",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Ticket",
@@ -636,6 +637,18 @@
    "read": 1,
    "role": "PACE Applicant",
    "select": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Applicant",
+   "select": 1,
+   "share": 1,
    "write": 1
   }
  ],
