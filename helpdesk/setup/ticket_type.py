@@ -23,8 +23,23 @@ NLS_TICKET_TYPES = {
     "Electric Appliance Declaration": "Declaration of electric appliance in room. No approval required; ticket auto-closes on submission.",
     "Transcript Request": "Request for an academic transcript, consolidated marksheet, or duplicate/digital copy. A fee applies and payment is required before the request is processed.",
     "Travel & Transportation": "Request for campus vehicle / driver for official or personal travel — includes trip details, driver and car assignment, and trip log (KM, time, charges).",
-    "Technical Issue": "Technical issues for PACE applicants — e.g. login, portal access, or application form problems.",
+    "Technical Issue": "Technical issues for PACE and NLSAT applicants — e.g. login, portal access, or application form problems.",
+    "NLSAT Domestic": "Queries from domestic NLSAT applicants — curriculum, eligibility, reservation, the NLSAT exam, test center / admit card, and others.",
+    "NLSAT International": "Queries from international (foreign national) NLSAT applicants — curriculum, eligibility, reservation, the NLSAT exam, test center / admit card, and others.",
 }
+
+# Default "Type of Issue" options for each NLSAT ticket type, seeded create-if-
+# missing. Admins can add more from Desk (HD Ticket Type Of Issue); the portal
+# picks them up automatically via get_issue_names_for_ticket_type.
+NLSAT_TICKET_TYPES = ["NLSAT Domestic", "NLSAT International"]
+NLSAT_TYPE_OF_ISSUES = [
+    "Curriculum",
+    "Eligibility",
+    "Reservation",
+    "NLSAT Exam",
+    "Test Center / Admit Card",
+    "Other",
+]
 
 
 def create_fallback_ticket_type():
@@ -58,3 +73,26 @@ def create_nls_ticket_types():
         d.description = description
         d.is_system = False
         d.save()
+
+
+def create_nlsat_type_of_issues():
+    # HD Ticket Type Of Issue is defined by the slcm app
+    if not frappe.db.table_exists("HD Ticket Type Of Issue"):
+        return
+
+    for ticket_type in NLSAT_TICKET_TYPES:
+        if not frappe.db.exists(DT, ticket_type):
+            continue
+
+        for issue_name in NLSAT_TYPE_OF_ISSUES:
+            if frappe.db.exists(
+                "HD Ticket Type Of Issue",
+                {"ticket_type": ticket_type, "issue_name": issue_name},
+            ):
+                continue
+
+            d = frappe.new_doc("HD Ticket Type Of Issue")
+            d.ticket_type = ticket_type
+            d.issue_name = issue_name
+            d.enabled = 1
+            d.insert(ignore_permissions=True)
