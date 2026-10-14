@@ -333,10 +333,19 @@ def _get_nlsat_applicant_context(application: dict | None) -> dict:
 	if not application:
 		return {}
 
+	# Applicant.program links to a Programme whose docname is an internal ID
+	# (e.g. "A-AY 2025-26-TRIMESTER-I-AY-2025-26"); show its program_name.
+	programme = ""
+	if application.program:
+		programme = (
+			frappe.db.get_value("Programme", application.program, "program_name")
+			or application.program
+		)
+
 	return {
 		"custom_student_name":   application.candidate_name or "",
 		"custom_student_id":     application.name or "",  # e.g. APP-2026-00073
-		"custom_programme":      application.program or "",
+		"custom_programme":      programme,
 		"custom_current_year":   "",                      # Not applicable for applicants
 		"custom_current_term":   "",                      # Not applicable for applicants
 		"custom_contact_number": application.mobile_number or "",
