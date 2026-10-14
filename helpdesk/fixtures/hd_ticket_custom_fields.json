@@ -658,8 +658,9 @@
   "default": "Final Transcript",
   "description": "Only \"Final Transcript\" is offered from Helpdesk today. Displayed to the student as \"Provisional Transcript\" via a form-script label override; the stored value stays \"Final Transcript\" to match the existing Transcript Request / Transcript Fee Settings / portal feature.",
   "insert_after": "custom_transcript_section",
-  "reqd": 1,
+  "reqd": 0,
   "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Transcript Request'",
   "name": "HD Ticket-custom_transcript_type"
  },
  {
@@ -692,8 +693,9 @@
   "fieldtype": "Small Text",
   "label": "Purpose",
   "insert_after": "custom_transcript_delivery_mode",
-  "reqd": 1,
+  "reqd": 0,
   "depends_on": "eval:doc.ticket_type=='Transcript Request'",
+  "mandatory_depends_on": "eval:doc.ticket_type=='Transcript Request'",
   "name": "HD Ticket-custom_transcript_purpose"
  },
  {
