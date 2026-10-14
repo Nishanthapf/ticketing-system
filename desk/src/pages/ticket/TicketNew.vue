@@ -334,7 +334,12 @@ const ticket = createResource({
     attachments: attachments.value,
   }),
   validate: (params) => {
-    const fields = visibleFields.value?.filter((f) => f.required) || [];
+    // Fields hidden by depends_on (e.g. Transcript Request fields on other
+    // ticket types) can't be filled in, so they must not block submission.
+    const fields =
+      visibleFields.value?.filter(
+        (f) => f.required && f.display_via_depends_on
+      ) || [];
     const toVerify = [...fields, "subject", "description"];
     for (const field of toVerify) {
       if (!params.doc[field.fieldname || field]) {

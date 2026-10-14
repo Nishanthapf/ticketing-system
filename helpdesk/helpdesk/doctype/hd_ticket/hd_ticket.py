@@ -99,8 +99,29 @@ class HDTicket(Document):
     def validate(self):
         self.validate_feedback()
         self.validate_reply_on_close()
+        self.validate_transcript_fields()
         if self.agent_group:
             start_escalation_if_enabled(self)
+
+    def validate_transcript_fields(self):
+        # These Custom Fields can't be reqd=1: Frappe enforces reqd on every
+        # ticket type, which blocked all non-transcript tickets. The server
+        # ignores mandatory_depends_on, so the condition is enforced here.
+        from helpdesk.api.nls_student import TRANSCRIPT_TICKET_TYPE
+
+        if self.ticket_type != TRANSCRIPT_TICKET_TYPE:
+            return
+
+        missing = [
+            _(self.meta.get_label(fieldname))
+            for fieldname in ("custom_transcript_type", "custom_transcript_purpose")
+            if not self.get(fieldname)
+        ]
+        if missing:
+            frappe.throw(
+                _("Value missing for HD Ticket: {0}").format(", ".join(missing)),
+                frappe.MandatoryError,
+            )
 
     def is_closing_status(self):
         if not self.status:
