@@ -11,6 +11,25 @@ FACULTY_ONLY_TYPE = "Travel & Transportation"
 # faculty, agents/support staff included) via the portal or the ticket_type url_method
 SYSTEM_MANAGER_ONLY_TYPES = {"Stores Request"}
 
+PACE_APPLICANT_ROLE = "PACE Applicant"
+NLSAT_APPLICANT_ROLE = "Applicant"
+
+PACE_TICKET_TYPE = "PACE"
+TECHNICAL_ISSUE_TICKET_TYPE = "Technical Issue"
+NLSAT_DOMESTIC_TICKET_TYPE = "NLSAT Domestic"
+NLSAT_INTERNATIONAL_TICKET_TYPE = "NLSAT International"
+NLSAT_TICKET_TYPES = [NLSAT_DOMESTIC_TICKET_TYPE, NLSAT_INTERNATIONAL_TICKET_TYPE]
+
+# Applicant.foriegn_national (sic — that's the field's real name in slcm)
+NLSAT_TICKET_TYPE_BY_FOREIGN_NATIONAL = {
+	"Yes": NLSAT_INTERNATIONAL_TICKET_TYPE,
+	"No": NLSAT_DOMESTIC_TICKET_TYPE,
+}
+
+NLSAT_APPLICATION_FIELDS = [
+	"name", "candidate_name", "program", "mobile_number", "foriegn_national",
+]
+
 def _get_issue_options(ticket_type: str) -> list:
 	rows = frappe.get_all(
 		"HD Ticket Type Of Issue",
@@ -72,6 +91,11 @@ def get_ticket_types() -> list:
 
 	Role-based filtering:
 	  - PACE Applicant   → PACE and Technical Issue ticket types only.
+	  - Applicant        → NLSAT Domestic / NLSAT International and Technical
+	                        Issue only. When the applicant has an application
+	                        form, only the NLSAT type matching its
+	                        foriegn_national value is offered; otherwise both.
+	                        A user holding both applicant roles gets the union.
 	  - slcm_Student     → All ticket types EXCEPT "Travel & Transportation"
 	                        (reserved for faculty/staff).
 	  - slcm_Faculty     → ONLY "Travel & Transportation".
@@ -80,14 +104,16 @@ def get_ticket_types() -> list:
 	                        (e.g. "Stores Request" — System Manager only, hidden even
 	                        from agents/support staff).
 	"""
-	user_roles = frappe.get_roles(frappe.session.user)
+	user = frappe.session.user
+	user_roles = frappe.get_roles(user)
 	is_system_manager = "System Manager" in user_roles
 
-	# PACE Applicants can only raise PACE or Technical Issue tickets
-	if "PACE Applicant" in user_roles:
+	# Applicants (PACE / NLSAT) are limited to their own admission ticket types
+	applicant_types = _get_applicant_ticket_types(user, user_roles)
+	if applicant_types:
 		allowed = frappe.get_all(
 			"HD Ticket Type",
-			filters={"name": ["in", ["PACE", "Technical Issue"]], "disabled": 0},
+			filters={"name": ["in", applicant_types], "disabled": 0},
 			fields=["name"],
 			order_by="name asc",
 			ignore_permissions=True,
@@ -116,6 +142,24 @@ def get_ticket_types() -> list:
 	return [{"label": t.name, "value": t.name} for t in types]
 
 
+def _get_applicant_ticket_types(user: str, user_roles: list) -> list:
+	"""
+	Ticket types an admission applicant may raise, or [] when the user holds
+	neither applicant role (caller then falls through to the normal rules).
+	"""
+	allowed = []
+	if PACE_APPLICANT_ROLE in user_roles:
+		allowed.append(PACE_TICKET_TYPE)
+
+	if NLSAT_APPLICANT_ROLE in user_roles:
+		nlsat_type = _get_nlsat_ticket_type(_get_nlsat_application(user))
+		allowed.extend([nlsat_type] if nlsat_type else NLSAT_TICKET_TYPES)
+
+	if allowed:
+		allowed.append(TECHNICAL_ISSUE_TICKET_TYPE)
+	return allowed
+
+
 @frappe.whitelist()
 def get_user_role_context() -> dict:
 	"""
@@ -127,14 +171,14 @@ def get_user_role_context() -> dict:
 	              'Travel & Transportation' template and pre-fill
 	              the ticket type.
 
-	  is_student → True for slcm_Student and PACE Applicant users.
-	              The form script uses this to show the student
-	              information section.
+	  is_student → True for slcm_Student, PACE Applicant and Applicant
+	              (NLSAT) users. The form script uses this to show the
+	              student information section.
 
 	  is_enrolled_student → True for slcm_Student only.
 	              The form script uses this to show fields that only
 	              apply to enrolled students (e.g. Year, Section/Term),
-	              which PACE Applicants don't have yet.
+	              which applicants don't have yet.
 	"""
 	user = frappe.session.user
 	if not user or user == "Guest":
@@ -143,7 +187,11 @@ def get_user_role_context() -> dict:
 	user_roles = frappe.get_roles(user)
 	is_faculty = "slcm_Faculty" in user_roles
 	is_enrolled_student = "slcm_Student" in user_roles
-	is_student = is_enrolled_student or "PACE Applicant" in user_roles
+	is_student = (
+		is_enrolled_student
+		or PACE_APPLICANT_ROLE in user_roles
+		or NLSAT_APPLICANT_ROLE in user_roles
+	)
 
 	return {
 		"is_faculty": is_faculty,
@@ -161,7 +209,12 @@ def get_student_context() -> dict:
 
 	Logic:
 	  1. Guest users              → {is_student: False} (no context).
-	  2. PACE Applicant role      → PACE Application data, is_student = True.
+	  2. PACE Applicant / Applicant role
+	                              → PACE Application / NLSAT Applicant data,
+	                                is_student = True. Applicant-role users
+	                                also get `nlsat_ticket_type` (matched from
+	                                their application, "" if none) which the
+	                                form script pre-selects as ticket_type.
 	  3. slcm_Student role        → Student Master data,  is_student = True.
 	  4. Faculty / staff / others → empty field values,   is_student = False
 	                                (student section is hidden for them).
@@ -172,9 +225,9 @@ def get_student_context() -> dict:
 
 	user_roles = frappe.get_roles(user)
 
-	# ── PACE Applicant: pull details from PACE Application ──────────────────
-	if "PACE Applicant" in user_roles:
-		ctx = _get_pace_applicant_context(user)
+	# ── PACE / NLSAT Applicant: pull details from their application ─────────
+	if PACE_APPLICANT_ROLE in user_roles or NLSAT_APPLICANT_ROLE in user_roles:
+		ctx = _get_applicant_context(user, user_roles)
 		ctx["is_student"] = True
 		return ctx
 
@@ -205,10 +258,10 @@ def resolve_programme_context(identifier: str) -> dict:
 	via inbound email, where there is no browser session to run client JS).
 
 	Tries Student Master first (enrolled students have a current_year),
-	falling back to PACE Application (applicants, no current_year).
-	`identifier` is typically the ticket's raised_by email, but a Frappe user
-	name works too since Student Master/PACE Application lookups match by
-	user or email fields either way.
+	falling back to PACE Application, then the NLSAT Applicant record
+	(applicants, no current_year). `identifier` is typically the ticket's
+	raised_by email, but a Frappe user name works too since all three
+	lookups match by user or email fields either way.
 	"""
 	if not identifier:
 		return {}
@@ -217,7 +270,106 @@ def resolve_programme_context(identifier: str) -> dict:
 	if ctx:
 		return ctx
 
-	return _get_pace_applicant_context(identifier)
+	ctx = _get_pace_applicant_context(identifier)
+	if ctx:
+		return ctx
+
+	return _get_nlsat_applicant_context(_get_nlsat_application(identifier))
+
+
+def _get_applicant_context(user: str, user_roles: list) -> dict:
+	"""
+	Ticket pre-fill data for PACE / NLSAT applicants. PACE Application wins
+	when a user holds both roles and has one; the NLSAT Applicant record
+	fills in otherwise.
+	"""
+	ctx = {}
+	if PACE_APPLICANT_ROLE in user_roles:
+		ctx = _get_pace_applicant_context(user)
+
+	if NLSAT_APPLICANT_ROLE in user_roles:
+		application = _get_nlsat_application(user)
+		if not ctx:
+			ctx = _get_nlsat_applicant_context(application)
+		ctx["nlsat_ticket_type"] = _get_nlsat_ticket_type(application) or ""
+
+	return ctx
+
+
+def _get_nlsat_application(user: str) -> dict | None:
+	"""
+	Latest NLSAT application (slcm "Applicant" doctype) for a user, matched
+	by user_id, then email, then owner. None if the user hasn't started one.
+	"""
+	if not user:
+		return None
+
+	for field in ("user_id", "email", "owner"):
+		application = frappe.db.get_value(
+			"Applicant",
+			{field: user},
+			NLSAT_APPLICATION_FIELDS,
+			as_dict=True,
+			order_by="modified desc",
+		)
+		if application:
+			return application
+	return None
+
+
+def _get_nlsat_ticket_type(application: dict | None) -> str | None:
+	"""
+	NLSAT Domestic / International for an application, or None when there is
+	no application or foriegn_national isn't filled in yet — the applicant
+	then picks the ticket type manually.
+	"""
+	if not application:
+		return None
+	return NLSAT_TICKET_TYPE_BY_FOREIGN_NATIONAL.get(application.foriegn_national)
+
+
+def _get_nlsat_applicant_context(application: dict | None) -> dict:
+	"""Ticket pre-fill fields built from an NLSAT application."""
+	if not application:
+		return {}
+
+	return {
+		"custom_student_name":   application.candidate_name or "",
+		"custom_student_id":     application.name or "",  # e.g. APP-2026-00073
+		"custom_programme":      application.program or "",
+		"custom_current_year":   "",                      # Not applicable for applicants
+		"custom_current_term":   "",                      # Not applicable for applicants
+		"custom_contact_number": application.mobile_number or "",
+		"custom_hostel":         "",                      # Not applicable for applicants
+		"custom_room_no":        "",                      # Not applicable for applicants
+	}
+
+
+def get_nlsat_technical_issue_team(user: str) -> str | None:
+	"""
+	Team for a Technical Issue ticket raised by an NLSAT applicant, or None
+	to keep the default routing (Technical Issue → PACE Team).
+
+	The team is taken from the applicant's NLSAT ticket type (Domestic /
+	International), so it follows whatever team admins set on that type.
+	Applicants with no application form (or no foriegn_national yet) fall
+	back to NLSAT Domestic, the far more common track. A user holding both
+	applicant roles is only treated as NLSAT when they have an NLSAT
+	application; otherwise their Technical Issue stays with PACE.
+	"""
+	if not user:
+		return None
+
+	user_roles = frappe.get_roles(user)
+	if NLSAT_APPLICANT_ROLE not in user_roles:
+		return None
+
+	application = _get_nlsat_application(user)
+	if PACE_APPLICANT_ROLE in user_roles and not application:
+		return None
+
+	nlsat_type = _get_nlsat_ticket_type(application) or NLSAT_DOMESTIC_TICKET_TYPE
+	return frappe.db.get_value("HD Ticket Type", nlsat_type, "team")
 
 
 def _get_pace_applicant_context(user: str) -> dict:

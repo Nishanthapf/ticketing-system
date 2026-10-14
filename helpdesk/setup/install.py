@@ -15,6 +15,7 @@ from .ticket_feedback import create_ticket_feedback_options
 from .ticket_type import (
     create_fallback_ticket_type,
     create_nls_ticket_types,
+    create_nlsat_type_of_issues,
     create_ootb_ticket_types,
 )
 from .welcome_ticket import create_welcome_ticket
@@ -38,6 +39,7 @@ def after_install():
     create_helpdesk_folder()
     create_ootb_ticket_types()
     create_nls_ticket_types()
+    create_nlsat_type_of_issues()
     create_escalation_email_templates_if_missing()
     try:
         create_welcome_ticket()

@@ -20,6 +20,13 @@
     "url_method": null
    },
    {
+    "fieldname": "custom_other_issue_details",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
     "fieldname": "custom_student_name",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -412,7 +419,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-09-24 12:00:00.000000",
+  "modified": "2026-10-14 12:00:00.000000",
   "name": "Default",
   "template_name": "Default"
  },

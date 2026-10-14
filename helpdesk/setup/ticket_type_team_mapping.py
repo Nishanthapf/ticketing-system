@@ -7,6 +7,8 @@ TICKET_TYPE_TEAM_MAP = {
     "Food and Beverage": "Food and Beverage Team",
     "IT": "IT Team",
     "Library": "Library Team",
+    "NLSAT Domestic": "NLSAT Team - Domestic",
+    "NLSAT International": "NLSAT Team - International",
     "PACE": "PACE Team",
     "Stores Request": "Stores Team",
     "Technical Issue": "PACE Team",

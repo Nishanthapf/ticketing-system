@@ -309,6 +309,11 @@ class HDTicket(Document):
                 self.agent_group = team
                 return
 
+        team = self.get_nlsat_technical_issue_team()
+        if team:
+            self.agent_group = team
+            return
+
         # Check programme/year-wise rules first (e.g. PACE)
         programme = self.get("custom_programme") or ""
         current_year = self.get("custom_current_year") or ""
@@ -355,6 +360,19 @@ class HDTicket(Document):
         team = frappe.db.get_value("HD Ticket Type", self.ticket_type, "team")
         if team:
             self.agent_group = team
+
+    def get_nlsat_technical_issue_team(self):
+        # "Technical Issue" is shared by PACE and NLSAT applicants but its
+        # flat team is the PACE Team, so NLSAT applicants' tickets need to be
+        # redirected to their own NLSAT team.
+        from helpdesk.api.nls_student import (
+            TECHNICAL_ISSUE_TICKET_TYPE,
+            get_nlsat_technical_issue_team,
+        )
+
+        if self.ticket_type != TECHNICAL_ISSUE_TICKET_TYPE:
+            return None
+        return get_nlsat_technical_issue_team(parseaddr(self.raised_by or "")[1])
 
     def set_raised_by(self):
         if self.raised_by:
