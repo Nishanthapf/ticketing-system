@@ -47,7 +47,7 @@
 
       <!-- sla info -->
       <div
-        v-for="data in slaData"
+        v-for="data in authStore.isNlsatApplicant ? [] : slaData"
         :key="data.label"
         class="flex items-center text-base"
       >
@@ -114,6 +114,7 @@
 
 <script setup lang="ts">
 import { ITicket } from "@/pages/ticket/symbols";
+import { useAuthStore } from "@/stores/auth";
 import { Field } from "@/types";
 import { dateFormat, dateTooltipFormat, formatTime } from "@/utils";
 import { Avatar, dayjs, Tooltip } from "frappe-ui";
@@ -122,6 +123,16 @@ import { computed, inject } from "vue";
 const emit = defineEmits(["open"]);
 
 const ticket = inject(ITicket);
+const authStore = useAuthStore();
+
+// NLSAT applicants share the student ticket template, most of whose fields
+// (hostel, transport, transcript, ...) never apply to them.
+const NLSAT_APPLICANT_FIELDS = [
+  "subject",
+  "ticket_type",
+  "custom_type_of_issue",
+  "custom_programme",
+];
 
 const slaData = computed(() => {
   const firstResponse = firstResponseData();
@@ -238,6 +249,7 @@ const ticketAdditionalInfo = computed(() => {
     )
     .map((field: Field) => {
       const option = {
+        fieldname: field.fieldname,
         label: field.label,
         value: ticket.data[field.fieldname],
       };
@@ -255,7 +267,12 @@ const ticketAdditionalInfo = computed(() => {
       return option;
     });
 
-  return [...fields, ...custom_fields];
+  const allFields = [...fields, ...custom_fields];
+  if (!authStore.isNlsatApplicant) return allFields;
+
+  return NLSAT_APPLICANT_FIELDS.map((fieldname) =>
+    allFields.find((field) => field.fieldname === fieldname)
+  ).filter(Boolean);
 });
 </script>
 

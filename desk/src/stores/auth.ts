@@ -37,6 +37,9 @@ export const useAuthStore = defineStore("auth", () => {
   const canCreateTicket: ComputedRef<boolean> = computed(
     () => user__.value.can_create_ticket ?? false
   );
+  const isNlsatApplicant: ComputedRef<boolean> = computed(
+    () => user__.value.is_nlsat_applicant ?? false
+  );
 
   const userId: ComputedRef<string> = computed(() => user__.value.user_id);
   const userImage: ComputedRef<string> = computed(
@@ -96,6 +99,7 @@ export const useAuthStore = defineStore("auth", () => {
     hasAgentRecord,
     isManager,
     canCreateTicket,
+    isNlsatApplicant,
     isLoggedIn,
     login,
     reloadUser,

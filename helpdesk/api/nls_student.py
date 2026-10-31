@@ -16,7 +16,7 @@ NLSAT_APPLICANT_ROLE = "Applicant"
 
 PACE_TICKET_TYPE = "PACE"
 TECHNICAL_ISSUE_TICKET_TYPE = "Technical Issue"
-NLSAT_DOMESTIC_TICKET_TYPE = "NLSAT Domestic"
+NLSAT_DOMESTIC_TICKET_TYPE = "NLSAT"
 NLSAT_INTERNATIONAL_TICKET_TYPE = "NLSAT International"
 NLSAT_TICKET_TYPES = [NLSAT_DOMESTIC_TICKET_TYPE, NLSAT_INTERNATIONAL_TICKET_TYPE]
 
@@ -96,7 +96,7 @@ def get_ticket_types() -> list:
 
 	Role-based filtering:
 	  - PACE Applicant   → PACE and Technical Issue ticket types only.
-	  - Applicant        → NLSAT Domestic / NLSAT International and Technical
+	  - Applicant        → NLSAT / NLSAT International and Technical
 	                        Issue only. When the applicant has an application
 	                        form, only the NLSAT type matching its
 	                        foriegn_national value is offered; otherwise the
@@ -326,7 +326,7 @@ def _get_nlsat_application(user: str) -> dict | None:
 
 def _get_nlsat_ticket_type(application: dict | None) -> str | None:
 	"""
-	NLSAT Domestic / International for an application, or None when there is
+	NLSAT / NLSAT International for an application, or None when there is
 	no application or foriegn_national isn't filled in yet — the applicant
 	then picks the ticket type manually.
 	"""
@@ -337,7 +337,7 @@ def _get_nlsat_ticket_type(application: dict | None) -> str | None:
 
 def _get_nlsat_portal_ticket_type() -> str | None:
 	"""
-	NLSAT Domestic / International from the portal the applicant logged in
+	NLSAT / NLSAT International from the portal the applicant logged in
 	through (nlsat_portal cookie), or None outside a web request / without
 	the cookie.
 	"""
@@ -393,7 +393,7 @@ def get_nlsat_technical_issue_team(user: str) -> str | None:
 	The team is taken from the applicant's NLSAT ticket type (Domestic /
 	International), so it follows whatever team admins set on that type.
 	Applicants with no application form (or no foriegn_national yet) use the
-	portal they logged in through, then fall back to NLSAT Domestic, the far
+	portal they logged in through, then fall back to NLSAT (domestic), the far
 	more common track. A user holding both
 	applicant roles is only treated as NLSAT when they have an NLSAT
 	application; otherwise their Technical Issue stays with PACE.
