@@ -3,7 +3,7 @@ import frappe
 from helpdesk.utils import agent_only, get_agent_name, get_agents_team
 from helpdesk.utils import is_agent as _is_agent
 from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import _role_has_doctype_permission
-from helpdesk.api.nls_student import NLSAT_APPLICANT_ROLE
+from helpdesk.api.nls_student import is_nlsat_applicant as _is_nlsat_applicant
 
 
 @frappe.whitelist()
@@ -50,8 +50,7 @@ def get_user():
     user_id = user.name
     username = user.username
     is_manager = "Agent Manager" in roles
-    # Applicants who have since enrolled keep the full student view
-    is_nlsat_applicant = NLSAT_APPLICANT_ROLE in roles and "slcm_Student" not in roles
+    is_nlsat_applicant = _is_nlsat_applicant(roles)
     user_team = get_agents_team()
     user_team_names = [team["team_name"] for team in user_team]
     language = user.language or frappe.db.get_single_value(

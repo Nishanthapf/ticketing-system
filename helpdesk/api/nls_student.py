@@ -35,6 +35,16 @@ NLSAT_APPLICATION_FIELDS = [
 	"name", "candidate_name", "program", "mobile_number", "foriegn_national",
 ]
 
+# SLA and routing details are internal; applicants only see what they need to track a ticket
+NLSAT_APPLICANT_HIDDEN_LIST_FIELDS = {"response_by", "resolution_by", "agent_group"}
+
+
+def is_nlsat_applicant(roles: list | None = None) -> bool:
+	roles = roles if roles is not None else frappe.get_roles()
+	# Applicants who have since enrolled keep the full student view
+	return NLSAT_APPLICANT_ROLE in roles and "slcm_Student" not in roles
+
+
 def _get_issue_options(ticket_type: str) -> list:
 	rows = frappe.get_all(
 		"HD Ticket Type Of Issue",
