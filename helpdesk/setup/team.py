@@ -31,7 +31,7 @@ OOTB_TEAMS = [
     "AER Condonation - MPP and LLM",
     "AER Condonation - LLB Hons",
     "AER Condonation - PhD",
-    "NLSAT Team - Domestic",
+    "NLSAT Team",
     "NLSAT Team - International",
 ]
 

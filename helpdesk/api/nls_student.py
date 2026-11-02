@@ -16,7 +16,7 @@ NLSAT_APPLICANT_ROLE = "Applicant"
 
 PACE_TICKET_TYPE = "PACE"
 TECHNICAL_ISSUE_TICKET_TYPE = "Technical Issue"
-NLSAT_DOMESTIC_TICKET_TYPE = "NLSAT Domestic"
+NLSAT_DOMESTIC_TICKET_TYPE = "NLSAT"
 NLSAT_INTERNATIONAL_TICKET_TYPE = "NLSAT International"
 NLSAT_TICKET_TYPES = [NLSAT_DOMESTIC_TICKET_TYPE, NLSAT_INTERNATIONAL_TICKET_TYPE]
 
@@ -26,9 +26,24 @@ NLSAT_TICKET_TYPE_BY_FOREIGN_NATIONAL = {
 	"No": NLSAT_DOMESTIC_TICKET_TYPE,
 }
 
+# Set by slcm's /nlsatadmissions/login and /nlsat-international/login pages
+# (slcm.admission.utils.nlsat_portal). The helpdesk is embedded in a same-origin
+# iframe, so its API calls carry this cookie too.
+NLSAT_PORTAL_COOKIE = "nlsat_portal"
+
 NLSAT_APPLICATION_FIELDS = [
 	"name", "candidate_name", "program", "mobile_number", "foriegn_national",
 ]
+
+# SLA and routing details are internal; applicants only see what they need to track a ticket
+NLSAT_APPLICANT_HIDDEN_LIST_FIELDS = {"response_by", "resolution_by", "agent_group"}
+
+
+def is_nlsat_applicant(roles: list | None = None) -> bool:
+	roles = roles if roles is not None else frappe.get_roles()
+	# Applicants who have since enrolled keep the full student view
+	return NLSAT_APPLICANT_ROLE in roles and "slcm_Student" not in roles
+
 
 def _get_issue_options(ticket_type: str) -> list:
 	rows = frappe.get_all(
@@ -91,10 +106,12 @@ def get_ticket_types() -> list:
 
 	Role-based filtering:
 	  - PACE Applicant   → PACE and Technical Issue ticket types only.
-	  - Applicant        → NLSAT Domestic / NLSAT International and Technical
+	  - Applicant        → NLSAT / NLSAT International and Technical
 	                        Issue only. When the applicant has an application
 	                        form, only the NLSAT type matching its
-	                        foriegn_national value is offered; otherwise both.
+	                        foriegn_national value is offered; otherwise the
+	                        portal they logged in through (nlsat_portal
+	                        cookie) decides; with neither, both are offered.
 	                        A user holding both applicant roles gets the union.
 	  - slcm_Student     → All ticket types EXCEPT "Travel & Transportation"
 	                        (reserved for faculty/staff).
@@ -152,7 +169,7 @@ def _get_applicant_ticket_types(user: str, user_roles: list) -> list:
 		allowed.append(PACE_TICKET_TYPE)
 
 	if NLSAT_APPLICANT_ROLE in user_roles:
-		nlsat_type = _get_nlsat_ticket_type(_get_nlsat_application(user))
+		nlsat_type = _resolve_nlsat_ticket_type(_get_nlsat_application(user))
 		allowed.extend([nlsat_type] if nlsat_type else NLSAT_TICKET_TYPES)
 
 	if allowed:
@@ -291,7 +308,7 @@ def _get_applicant_context(user: str, user_roles: list) -> dict:
 		application = _get_nlsat_application(user)
 		if not ctx:
 			ctx = _get_nlsat_applicant_context(application)
-		ctx["nlsat_ticket_type"] = _get_nlsat_ticket_type(application) or ""
+		ctx["nlsat_ticket_type"] = _resolve_nlsat_ticket_type(application) or ""
 
 	return ctx
 
@@ -319,13 +336,37 @@ def _get_nlsat_application(user: str) -> dict | None:
 
 def _get_nlsat_ticket_type(application: dict | None) -> str | None:
 	"""
-	NLSAT Domestic / International for an application, or None when there is
+	NLSAT / NLSAT International for an application, or None when there is
 	no application or foriegn_national isn't filled in yet — the applicant
 	then picks the ticket type manually.
 	"""
 	if not application:
 		return None
 	return NLSAT_TICKET_TYPE_BY_FOREIGN_NATIONAL.get(application.foriegn_national)
+
+
+def _get_nlsat_portal_ticket_type() -> str | None:
+	"""
+	NLSAT / NLSAT International from the portal the applicant logged in
+	through (nlsat_portal cookie), or None outside a web request / without
+	the cookie.
+	"""
+	request = getattr(frappe.local, "request", None)
+	value = request.cookies.get(NLSAT_PORTAL_COOKIE) if request else None
+	if not value:
+		return None
+	if value.strip().lower() == "international":
+		return NLSAT_INTERNATIONAL_TICKET_TYPE
+	return NLSAT_DOMESTIC_TICKET_TYPE
+
+
+def _resolve_nlsat_ticket_type(application: dict | None) -> str | None:
+	"""
+	The applicant's NLSAT ticket type: their application form's
+	foriegn_national wins (it's the recorded fact); without one, the portal
+	they came in through decides. None → let the applicant pick.
+	"""
+	return _get_nlsat_ticket_type(application) or _get_nlsat_portal_ticket_type()
 
 
 def _get_nlsat_applicant_context(application: dict | None) -> dict:
@@ -361,8 +402,9 @@ def get_nlsat_technical_issue_team(user: str) -> str | None:
 
 	The team is taken from the applicant's NLSAT ticket type (Domestic /
 	International), so it follows whatever team admins set on that type.
-	Applicants with no application form (or no foriegn_national yet) fall
-	back to NLSAT Domestic, the far more common track. A user holding both
+	Applicants with no application form (or no foriegn_national yet) use the
+	portal they logged in through, then fall back to NLSAT (domestic), the far
+	more common track. A user holding both
 	applicant roles is only treated as NLSAT when they have an NLSAT
 	application; otherwise their Technical Issue stays with PACE.
 	"""
@@ -377,7 +419,7 @@ def get_nlsat_technical_issue_team(user: str) -> str | None:
 	if PACE_APPLICANT_ROLE in user_roles and not application:
 		return None
 
-	nlsat_type = _get_nlsat_ticket_type(application) or NLSAT_DOMESTIC_TICKET_TYPE
+	nlsat_type = _resolve_nlsat_ticket_type(application) or NLSAT_DOMESTIC_TICKET_TYPE
 	return frappe.db.get_value("HD Ticket Type", nlsat_type, "team")
 
 

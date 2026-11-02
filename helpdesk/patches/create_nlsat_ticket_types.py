@@ -8,7 +8,7 @@ from helpdesk.setup.ticket_type import (
 
 
 def execute():
-    # Backfills the NLSAT Domestic / International ticket types, their default
+    # Backfills the NLSAT (domestic) / International ticket types, their default
     # Type of Issue options and the two NLSAT teams on sites that already ran
     # the one-shot create_*_if_missing patches. All three are create-if-missing,
     # so existing types, teams and admin-added issues are left untouched. The

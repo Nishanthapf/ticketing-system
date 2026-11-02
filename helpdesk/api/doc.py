@@ -7,6 +7,10 @@ from frappe.utils.caching import redis_cache
 from pypika import Criterion
 
 from helpdesk.api.dashboard import COUNT_NAME
+from helpdesk.api.nls_student import (
+    NLSAT_APPLICANT_HIDDEN_LIST_FIELDS,
+    is_nlsat_applicant,
+)
 from helpdesk.utils import (
     call_log_default_columns,
     check_permissions,
@@ -102,6 +106,13 @@ def get_list_data(
     if rows is None:
         rows = []
 
+    hide_applicant_fields = doctype == "HD Ticket" and is_nlsat_applicant()
+    if hide_applicant_fields:
+        columns = [
+            c for c in columns if c.get("key") not in NLSAT_APPLICANT_HIDDEN_LIST_FIELDS
+        ]
+        rows = [r for r in rows if r not in NLSAT_APPLICANT_HIDDEN_LIST_FIELDS]
+
     # check if rows has all keys from columns if not add them
     for column in columns:
         if column.get("key") not in rows:
@@ -165,6 +176,12 @@ def get_list_data(
 
     if show_customer_portal_fields:
         fields = get_customer_portal_fields(doctype, fields)
+
+    # Keep them out of the column picker too, so they can't be re-added
+    if hide_applicant_fields:
+        fields = [
+            f for f in fields if f.get("value") not in NLSAT_APPLICANT_HIDDEN_LIST_FIELDS
+        ]
 
     if group_by_field and view_type == "group_by":
 
