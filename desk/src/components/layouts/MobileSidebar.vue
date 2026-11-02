@@ -159,6 +159,10 @@ const allViews = computed(() => {
     items = items.filter((item) => item.label !== "Call Logs");
   }
 
+  if (authStore.isNlsatApplicant) {
+    items = items.filter((item) => item.to !== "CustomerKnowledgeBase");
+  }
+
   const options = [
     {
       label: "All Views",

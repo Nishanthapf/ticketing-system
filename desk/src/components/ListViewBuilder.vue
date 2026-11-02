@@ -8,10 +8,13 @@
     v-if="showViewControls"
   >
     <QuickFilters v-if="!isMobileView" />
-    <div v-if="!isMobileView" class="-ms-2 h-5 border-s"></div>
+    <div
+      v-if="!isMobileView && !isNlsatApplicant"
+      class="-ms-2 h-5 border-s"
+    ></div>
     <div
       class="flex items-start gap-2 justify-end h-full py-1 ps-0.5"
-      v-if="!isMobileView"
+      v-if="!isMobileView && !isNlsatApplicant"
     >
       <Button
         :label="__('Save Changes')"
@@ -26,7 +29,10 @@
         v-if="!options.hideColumnSetting"
       />
     </div>
-    <div v-else class="flex justify-between items-center w-full">
+    <div
+      v-else-if="isMobileView && !isNlsatApplicant"
+      class="flex justify-between items-center w-full"
+    >
       <Filter />
       <div class="flex items-center gap-2">
         <Reload @click="handleReload" :loading="list.loading" />
@@ -206,7 +212,7 @@ const props = defineProps<P>();
 const emit = defineEmits<E>();
 const route = useRoute();
 const router = useRouter();
-const { isManager } = useAuthStore();
+const { isManager, isNlsatApplicant } = useAuthStore();
 const { $dialog, $socket } = globalStore();
 const { getStatus } = useTicketStatusStore();
 

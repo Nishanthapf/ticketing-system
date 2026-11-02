@@ -208,6 +208,9 @@ export const router = createRouter({
   routes,
 });
 
+// NLSAT applicants have no access to the knowledge base
+const CUSTOMER_KB_ROUTES = ["CustomerKnowledgeBase", "Articles", "ArticlePublic"];
+
 router.beforeEach(async (to, _, next) => {
   const authStore = useAuthStore();
   isCustomerPortal.value = to.meta.public || false;
@@ -222,6 +225,11 @@ router.beforeEach(async (to, _, next) => {
       LOGIN_PAGE +
       (redirectURL ? `?redirect-to=/helpdesk${redirectURL}` : "/helpdesk");
   } else if (!to.meta.public && !authStore.hasDeskAccess) {
+    next({ name: "TicketsCustomer" });
+  } else if (
+    authStore.isNlsatApplicant &&
+    CUSTOMER_KB_ROUTES.includes(to.name as string)
+  ) {
     next({ name: "TicketsCustomer" });
   } else if (to.name === "TicketAgent" && !authStore.isAgent) {
     const ticketId = to.params.ticketId;
