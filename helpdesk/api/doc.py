@@ -9,6 +9,7 @@ from pypika import Criterion
 from helpdesk.api.dashboard import COUNT_NAME
 from helpdesk.api.nls_student import (
     NLSAT_APPLICANT_HIDDEN_LIST_FIELDS,
+    NLSAT_APPLICANT_HIDDEN_QUICK_FILTERS,
     is_nlsat_applicant,
 )
 from helpdesk.utils import (
@@ -474,6 +475,13 @@ def get_quick_filters(doctype: str, show_customer_portal_fields: bool = False):
     if hasattr(_list, "filter_standard_fields") and show_customer_portal_fields:
         # to filter out more fields from customer remember to update customer_not_allowed_fields in hd_ticket.py
         quick_filters = _list.filter_standard_fields(quick_filters)
+
+    if is_nlsat_applicant():
+        quick_filters = [
+            f
+            for f in quick_filters
+            if f.get("name") not in NLSAT_APPLICANT_HIDDEN_QUICK_FILTERS
+        ]
 
     return quick_filters
 
