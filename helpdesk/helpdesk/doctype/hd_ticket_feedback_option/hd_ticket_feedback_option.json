@@ -35,7 +35,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-03-24 10:40:36.583694",
+ "modified": "2026-11-03 12:00:00.000000",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Ticket Feedback Option",
@@ -74,6 +74,21 @@
    "report": 1,
    "role": "HD Customer",
    "share": 1
+  },
+  {
+   "read": 1,
+   "role": "Applicant",
+   "select": 1
+  },
+  {
+   "read": 1,
+   "role": "PACE Applicant",
+   "select": 1
+  },
+  {
+   "read": 1,
+   "role": "slcm_Student",
+   "select": 1
   }
  ],
  "quick_entry": 1,
