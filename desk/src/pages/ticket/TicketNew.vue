@@ -83,7 +83,11 @@
           :query="subject"
           class="shadow"
         />
-        <div v-if="isCustomerPortal">
+        <div v-if="isCustomerPortal" class="flex flex-col gap-2">
+          <span class="block text-sm text-ink-gray-6">
+            {{ __("Description") }}
+            <span class="place-self-center text-red-500"> * </span>
+          </span>
           <TicketTextEditor
             ref="editor"
             v-model:attachments="attachments"

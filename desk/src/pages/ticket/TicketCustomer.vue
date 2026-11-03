@@ -263,16 +263,12 @@ const outsideHourSettings = createResource({
 });
 
 const send = createResource({
-  url: "run_doc_method",
+  url: "helpdesk.helpdesk.doctype.hd_ticket.api.reply_by_contact",
   debounce: 300,
   makeParams: () => ({
-    dt: "HD Ticket",
-    dn: props.ticketId,
-    method: "create_communication_via_contact",
-    args: {
-      message: editorContent.value,
-      attachments: attachments.value,
-    },
+    name: props.ticketId,
+    message: editorContent.value,
+    attachments: attachments.value,
   }),
   onSuccess: () => {
     editor.value.editor.commands.clearContent(true);
@@ -322,20 +318,17 @@ function handleClose() {
 function showConfirmationDialog() {
   $dialog({
     title: __("Close Ticket"),
-    message: __("Are you sure you want to close this ticket?"),
+    message: hasAgentCommunication.value
+      ? __("Are you sure you want to close this ticket?")
+      : __(
+          "You are closing this ticket without any reply from the agent. Are you sure you want to close it?"
+        ),
     actions: [
       {
         label: __("Confirm"),
         variant: "solid",
         onClick(close: Function) {
-          setValue.submit(
-            { fieldname: "status", value: "Closed" },
-            {
-              onSuccess: () => {
-                toast.success(__("Ticket closed successfully."));
-              },
-            }
-          );
+          closeTicket.submit();
           close();
         },
       },
@@ -343,20 +336,13 @@ function showConfirmationDialog() {
   });
 }
 
-const setValue = createResource({
-  url: "frappe.client.set_value",
+const closeTicket = createResource({
+  url: "helpdesk.helpdesk.doctype.hd_ticket.api.close_ticket_by_contact",
   debounce: 300,
-  makeParams: (params) => {
-    return {
-      doctype: "HD Ticket",
-      name: props.ticketId,
-      fieldname: params.fieldname,
-      value: params.value,
-    };
-  },
+  makeParams: () => ({ name: props.ticketId }),
   onSuccess: () => {
-    showFeedbackDialog.value = false;
     ticket.reload();
+    toast.success(__("Ticket closed successfully."));
   },
   onError: (err: any) => {
     ticket.reload();
@@ -381,12 +367,14 @@ const showEditor = computed(() => ticket.data.status !== "Closed");
 
 // this handles whether the ticket was raised and then was closed without any reply from the agent.
 const { isFeedbackMandatory } = useConfigStore();
-const showFeedback = computed(() => {
-  const hasAgentCommunication = ticket.data?.communications?.some(
-    (c) => c.sender !== ticket.data.raised_by
-  );
-  return hasAgentCommunication && isFeedbackMandatory;
-});
+const hasAgentCommunication = computed(() =>
+  Boolean(
+    ticket.data?.communications?.some((c) => c.sender !== ticket.data.raised_by)
+  )
+);
+const showFeedback = computed(
+  () => hasAgentCommunication.value && isFeedbackMandatory
+);
 
 // Customer can reopen a Closed ticket only within 24 hours of resolution.
 // The actual window is re-validated server-side in `reopen_ticket` — this
