@@ -663,6 +663,14 @@ export function validateConditions(conditions: any[]): boolean {
   return conditions.length > 0;
 }
 
+// frappe.client.delete is blocked for applicant-only users (slcm api_guard),
+// so portal editors remove their unsent uploads through this endpoint.
+export async function removePendingAttachment(attachment: string) {
+  await call("helpdesk.helpdesk.doctype.hd_ticket.api.remove_pending_attachment", {
+    name: attachment,
+  });
+}
+
 export async function removeAttachmentFromServer(attachment: string) {
   await call("frappe.client.delete", {
     doctype: "File",
