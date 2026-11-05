@@ -55,3 +55,5 @@ helpdesk.patches.create_transcript_request_ticket_type
 helpdesk.patches.remove_unused_ticket_types
 helpdesk.patches.create_nlsat_ticket_types
 helpdesk.patches.rename_nlsat_domestic
+helpdesk.patches.create_default_raised_by_labels
+helpdesk.patches.backfill_ticket_raised_by_label

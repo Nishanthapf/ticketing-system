@@ -2,6 +2,7 @@
 # See license.txt
 
 from datetime import timedelta
+from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -1629,6 +1630,22 @@ class TestHDTicket(IntegrationTestCase):
             close_ticket_by_contact(ticket.name)
         with self.assertRaises(frappe.PermissionError):
             reply_by_contact(ticket.name, "<p>hi</p>")
+
+    def test_contact_without_role_write_can_close_and_reply(self):
+        # Sites whose Custom DocPerm gives Applicant only read/create.
+        user = create_contact("Test C1", CONTACTS[0]).get("user")
+        frappe.set_user(user)
+        ticket = make_ticket()
+
+        with patch(
+            "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.frappe.has_permission",
+            side_effect=lambda doctype, ptype="read", *args, **kwargs: ptype == "read",
+        ):
+            reply_by_contact(ticket.name, "<p>Any update?</p>")
+            close_ticket_by_contact(ticket.name)
+
+        ticket.reload()
+        self.assertEqual(ticket.status, "Closed")
 
     def test_portal_ticket_requires_description(self):
         for empty in ("", "<p></p>", "<p> </p>"):

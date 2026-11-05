@@ -24,6 +24,20 @@ class HDSettings(Document):
         self.validate_auto_close_resolved_after()
         self.validate_email_contents()
         self.validate_send_feedback_when_ticket_closed()
+        self.validate_raised_by_role_map()
+
+    def validate_raised_by_role_map(self):
+        # First matching row wins, so a role listed twice would make its later
+        # row dead config that silently never applies.
+        seen = set()
+        for row in self.raised_by_role_map or []:
+            if row.role in seen:
+                frappe.throw(
+                    _("Row #{0}: Role {1} is already mapped to a label").format(
+                        row.idx, frappe.bold(row.role)
+                    )
+                )
+            seen.add(row.role)
 
     def validate_auto_close_days(self):
         if self.auto_close_tickets and self.auto_close_after_days <= 0:

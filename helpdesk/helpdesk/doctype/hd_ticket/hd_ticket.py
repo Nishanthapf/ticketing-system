@@ -92,6 +92,7 @@ class HDTicket(Document):
         self.check_update_perms()
         self.set_ticket_type()
         self.set_raised_by()
+        self.set_raised_by_details()
         self.set_team_from_ticket_type()
         self.set_priority()
         self.set_first_responded_on()
@@ -420,6 +421,26 @@ class HDTicket(Document):
             return
         self.raised_by = frappe.session.user
 
+    def set_raised_by_details(self):
+        """
+        Raised By label (Student / Applicant / Faculty / ...) from the
+        requester's roles, plus Name / ID when the portal form didn't fill
+        them (e.g. tickets created from inbound email).
+        """
+        if not self.is_new() and self.custom_raised_by_label:
+            return
+
+        from helpdesk.api.raised_by import get_raised_by_context
+
+        ctx = get_raised_by_context(self.raised_by)
+        # Always recomputed on insert: the label must come from the
+        # requester's roles, never from a value posted by the client.
+        self.custom_raised_by_label = ctx.get("raised_by_label")
+        if not self.custom_student_name:
+            self.custom_student_name = ctx.get("custom_student_name")
+        if not self.custom_student_id:
+            self.custom_student_id = ctx.get("custom_student_id")
+
     def set_contact(self):
         email_id = parseaddr(self.raised_by)[1]
         # flake8: noqa
@@ -740,8 +761,23 @@ class HDTicket(Document):
         """
         Gate for the portal endpoints (close / reply by contact). Agents use the
         agent-side actions, which keep the agent-only validations.
+
+        Ownership is checked directly instead of role-level "write": Custom
+        DocPerm differs per site (not shipped as a fixture), and on sites where
+        Applicant has only read/create the contact could not close or reply to
+        their own ticket.
         """
-        if is_agent() or not frappe.has_permission("HD Ticket", "write", self):
+        user = frappe.session.user
+        is_ticket_contact = user in (
+            self.contact,
+            self.raised_by,
+            self.owner,
+        ) or _is_customer_manager(self.customer, user)
+        if (
+            is_agent()
+            or not is_ticket_contact
+            or not frappe.has_permission("HD Ticket", "read", self)
+        ):
             frappe.throw(_("Not permitted"), frappe.PermissionError)
 
     def close_by_contact(

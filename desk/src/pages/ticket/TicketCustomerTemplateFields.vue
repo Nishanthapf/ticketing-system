@@ -39,7 +39,7 @@
       class="flex items-center gap-4"
     >
       <span class="w-[150px] shrink-0 text-sm text-ink-gray-5">{{
-        field.label
+        raisedByFieldLabel(field.fieldname, field.label, ticket.data)
       }}</span>
       <span
         class="flex-1 truncate rounded border border-outline-gray-2 bg-surface-white px-2 py-1 text-base font-medium"
@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { dayjs } from "frappe-ui";
 import { Field } from "@/types";
+import { raisedByFieldLabel } from "@/utils";
 import { computed, inject } from "vue";
 import { ITicket } from "./symbols";
 

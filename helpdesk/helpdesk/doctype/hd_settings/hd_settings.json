@@ -89,7 +89,9 @@
   "sla_breach_reminder_section",
   "enable_sla_breach_reminder",
   "column_break_sbrt",
-  "sla_breach_reminder_template"
+  "sla_breach_reminder_template",
+  "raised_by_label_section",
+  "raised_by_role_map"
  ],
  "fields": [
   {
@@ -582,12 +584,24 @@
    "fieldtype": "Link",
    "label": "SLA Breach Reminder Email Template",
    "options": "Email Template"
+  },
+  {
+   "description": "Decides the label shown for the ticket's requester (e.g. Applicant Name / Applicant ID) from the roles of the user who raised it. The first row whose role the user has wins, so order rows by precedence.",
+   "fieldname": "raised_by_label_section",
+   "fieldtype": "Section Break",
+   "label": "Raised By Label"
+  },
+  {
+   "fieldname": "raised_by_role_map",
+   "fieldtype": "Table",
+   "label": "Role to Label Mapping",
+   "options": "HD Raised By Role Map"
   }
  ],
  "grid_page_length": 50,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-29 18:07:35.389430",
+ "modified": "2026-11-05 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Settings",
