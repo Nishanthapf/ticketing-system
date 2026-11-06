@@ -17,6 +17,16 @@ import TicketIcon from "./components/icons/TicketIcon.vue";
 import { getMeta } from "./stores/meta";
 import { __ } from "./translation";
 
+// NLSAT applicants share the student ticket template, most of whose fields
+// (hostel, transport, transcript, ...) never apply to them. Only these are
+// shown to them, in this order, on both desktop and mobile ticket views.
+export const NLSAT_APPLICANT_FIELDS = [
+  "subject",
+  "ticket_type",
+  "custom_type_of_issue",
+  "custom_programme",
+];
+
 // Requester fields whose label is prefixed with the ticket's Raised By label
 // (HD Settings > Ticket Settings > Raised By Label), e.g. "Applicant ID".
 const RAISED_BY_FIELD_SUFFIX: Record<string, string> = {
