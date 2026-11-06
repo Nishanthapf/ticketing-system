@@ -3,7 +3,11 @@ from unittest.mock import patch
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from helpdesk.api.raised_by import get_raised_by_context
+from helpdesk.api.raised_by import (
+    INTERNATIONAL_APPLICANT_LABEL,
+    NLSAT_APPLICANT_LABEL,
+    get_raised_by_context,
+)
 from helpdesk.test_utils import (
     create_user,
     make_raised_by_label,
@@ -94,3 +98,45 @@ class TestRaisedBy(IntegrationTestCase):
     def test_duplicate_role_in_settings_is_rejected(self):
         with self.assertRaises(frappe.ValidationError):
             set_raised_by_role_map([(ROLE_A, LABEL_A), (ROLE_A, LABEL_B)])
+
+    def test_nlsat_applicant_label_follows_foreign_national(self):
+        self.user.add_roles(ROLE_A)
+        make_raised_by_label(NLSAT_APPLICANT_LABEL)
+        make_raised_by_label(INTERNATIONAL_APPLICANT_LABEL)
+        set_raised_by_role_map([(ROLE_A, NLSAT_APPLICANT_LABEL)])
+
+        for foreign_national, expected in (
+            ("Yes", INTERNATIONAL_APPLICANT_LABEL),
+            ("No", NLSAT_APPLICANT_LABEL),
+        ):
+            application = frappe._dict(foriegn_national=foreign_national)
+            with patch(
+                "helpdesk.api.raised_by._get_nlsat_application", return_value=application
+            ):
+                # The application is the recorded fact, so it beats the ticket type
+                ctx = get_raised_by_context(USER_EMAIL, "NLSAT International")
+            self.assertEqual(ctx["raised_by_label"], expected)
+
+    def test_nlsat_applicant_without_application_uses_ticket_type(self):
+        self.user.add_roles(ROLE_A)
+        make_raised_by_label(NLSAT_APPLICANT_LABEL)
+        make_raised_by_label(INTERNATIONAL_APPLICANT_LABEL)
+        set_raised_by_role_map([(ROLE_A, NLSAT_APPLICANT_LABEL)])
+
+        with patch("helpdesk.api.raised_by._get_nlsat_application", return_value=None):
+            international = get_raised_by_context(USER_EMAIL, "NLSAT International")
+            domestic = get_raised_by_context(USER_EMAIL, "NLSAT")
+        self.assertEqual(international["raised_by_label"], INTERNATIONAL_APPLICANT_LABEL)
+        self.assertEqual(domestic["raised_by_label"], NLSAT_APPLICANT_LABEL)
+
+    def test_disabled_international_label_keeps_nlsat_label(self):
+        self.user.add_roles(ROLE_A)
+        make_raised_by_label(NLSAT_APPLICANT_LABEL)
+        make_raised_by_label(INTERNATIONAL_APPLICANT_LABEL, enabled=0)
+        set_raised_by_role_map([(ROLE_A, NLSAT_APPLICANT_LABEL)])
+        try:
+            with patch("helpdesk.api.raised_by._get_nlsat_application", return_value=None):
+                ctx = get_raised_by_context(USER_EMAIL, "NLSAT International")
+            self.assertEqual(ctx["raised_by_label"], NLSAT_APPLICANT_LABEL)
+        finally:
+            make_raised_by_label(INTERNATIONAL_APPLICANT_LABEL)

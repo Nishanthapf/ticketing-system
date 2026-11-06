@@ -13,14 +13,15 @@ def execute():
     tickets = frappe.get_all(
         "HD Ticket",
         filters={"custom_raised_by_label": ["is", "not set"], "raised_by": ["is", "set"]},
-        fields=["name", "raised_by", "custom_student_name", "custom_student_id"],
+        fields=["name", "raised_by", "ticket_type", "custom_student_name", "custom_student_id"],
     )
 
     context_by_requester = {}
     for ticket in tickets:
-        if ticket.raised_by not in context_by_requester:
-            context_by_requester[ticket.raised_by] = get_raised_by_context(ticket.raised_by)
-        ctx = context_by_requester[ticket.raised_by]
+        key = (ticket.raised_by, ticket.ticket_type)
+        if key not in context_by_requester:
+            context_by_requester[key] = get_raised_by_context(*key)
+        ctx = context_by_requester[key]
         if not ctx:
             continue
 

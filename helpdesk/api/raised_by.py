@@ -13,7 +13,12 @@ from email.utils import parseaddr
 import frappe
 
 from helpdesk.api.nls_student import (
+	NLSAT_INTERNATIONAL_TICKET_TYPE,
+	NLSAT_TICKET_TYPES,
 	_get_applicant_context,
+	_get_nlsat_application,
+	_get_nlsat_portal_ticket_type,
+	_get_nlsat_ticket_type,
 	_get_student_master_context,
 )
 
@@ -22,12 +27,23 @@ DATA_SOURCE_APPLICANT = "Applicant"
 DATA_SOURCE_FACULTY = "Faculty"
 DATA_SOURCE_USER = "User"
 
+NLSAT_APPLICANT_LABEL = "NLSAT Applicant"
+INTERNATIONAL_APPLICANT_LABEL = "International Applicant"
+PACE_APPLICANT_LABEL = "PACE Applicant"
+
+# Domestic and international NLSAT applicants hold the same role, so the role
+# map can only pick the domestic label; it is swapped for its international
+# counterpart when the applicant is a foreign national.
+INTERNATIONAL_LABELS = {NLSAT_APPLICANT_LABEL: INTERNATIONAL_APPLICANT_LABEL}
+
 # Default labels and role mapping seeded on install (create-if-missing). Row
 # order is precedence: an enrolled student who still holds an applicant role
 # is shown as a Student.
 DEFAULT_LABELS = {
 	"Student": DATA_SOURCE_STUDENT_MASTER,
-	"Applicant": DATA_SOURCE_APPLICANT,
+	NLSAT_APPLICANT_LABEL: DATA_SOURCE_APPLICANT,
+	INTERNATIONAL_APPLICANT_LABEL: DATA_SOURCE_APPLICANT,
+	PACE_APPLICANT_LABEL: DATA_SOURCE_APPLICANT,
 	"Faculty": DATA_SOURCE_FACULTY,
 	"Staff": DATA_SOURCE_FACULTY,
 	"AAD": DATA_SOURCE_FACULTY,
@@ -35,8 +51,8 @@ DEFAULT_LABELS = {
 DEFAULT_ROLE_MAP = [
 	("slcm_Student", "Student"),
 	("Student", "Student"),
-	("Applicant", "Applicant"),
-	("PACE Applicant", "Applicant"),
+	("Applicant", NLSAT_APPLICANT_LABEL),
+	("PACE Applicant", PACE_APPLICANT_LABEL),
 	("slcm_Faculty", "Faculty"),
 	("Guest Faculty", "Faculty"),
 	("AAD", "AAD"),
@@ -56,12 +72,15 @@ def get_my_raised_by_context() -> dict:
 	return get_raised_by_context(user)
 
 
-def get_raised_by_context(identifier: str) -> dict:
+def get_raised_by_context(identifier: str, ticket_type: str | None = None) -> dict:
 	"""
 	{"raised_by_label", "custom_student_name", "custom_student_id", ...} for a
 	user name or email. Empty dict when no mapped role matches. Any extra
 	custom_* fields the data source provides (programme, contact number, ...)
 	are passed through so callers can pre-fill them too.
+
+	`ticket_type` is the ticket's type, when there is one; it tells domestic
+	and international NLSAT applicants apart if their application doesn't.
 	"""
 	user = resolve_user(identifier)
 	if not user:
@@ -74,8 +93,34 @@ def get_raised_by_context(identifier: str) -> dict:
 
 	data_source = frappe.get_cached_value("HD Raised By Label", label, "data_source")
 	ctx = get_source_context(data_source, user, roles) or get_user_context(user)
-	ctx["raised_by_label"] = label
+	ctx["raised_by_label"] = get_international_label(label, user, ticket_type)
 	return ctx
+
+
+def get_international_label(label: str, user: str, ticket_type: str | None) -> str:
+	"""`label`'s international counterpart for foreign-national NLSAT applicants, else `label`."""
+	international_label = INTERNATIONAL_LABELS.get(label)
+	if not international_label:
+		return label
+	if not frappe.get_cached_value("HD Raised By Label", international_label, "enabled"):
+		return label
+	if get_nlsat_ticket_type(user, ticket_type) != NLSAT_INTERNATIONAL_TICKET_TYPE:
+		return label
+	return international_label
+
+
+def get_nlsat_ticket_type(user: str, ticket_type: str | None) -> str | None:
+	"""
+	NLSAT / NLSAT International for an applicant: their application's
+	foriegn_national (the recorded fact) wins, then the ticket's own NLSAT
+	ticket type, then the portal they logged in through.
+	"""
+	from_application = _get_nlsat_ticket_type(_get_nlsat_application(user))
+	if from_application:
+		return from_application
+	if ticket_type in NLSAT_TICKET_TYPES:
+		return ticket_type
+	return _get_nlsat_portal_ticket_type()
 
 
 def get_raised_by_label(roles: list) -> str | None:

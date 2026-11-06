@@ -57,3 +57,4 @@ helpdesk.patches.create_nlsat_ticket_types
 helpdesk.patches.rename_nlsat_domestic
 helpdesk.patches.create_default_raised_by_labels
 helpdesk.patches.backfill_ticket_raised_by_label
+helpdesk.patches.split_applicant_raised_by_label

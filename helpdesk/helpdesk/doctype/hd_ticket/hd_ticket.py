@@ -432,7 +432,7 @@ class HDTicket(Document):
 
         from helpdesk.api.raised_by import get_raised_by_context
 
-        ctx = get_raised_by_context(self.raised_by)
+        ctx = get_raised_by_context(self.raised_by, self.ticket_type)
         # Always recomputed on insert: the label must come from the
         # requester's roles, never from a value posted by the client.
         self.custom_raised_by_label = ctx.get("raised_by_label")
