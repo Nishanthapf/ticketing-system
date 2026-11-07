@@ -25,6 +25,7 @@ from pypika.functions import Count
 from pypika.queries import Query
 from pypika.terms import Criterion
 
+from helpdesk.api.nlsat_portal import get_nlsat_applicant_helpdesk_url
 from helpdesk.helpdesk.doctype.hd_settings.helpers import (
     get_default_email_content,
     is_email_content_empty,
@@ -432,7 +433,7 @@ class HDTicket(Document):
 
         from helpdesk.api.raised_by import get_raised_by_context
 
-        ctx = get_raised_by_context(self.raised_by)
+        ctx = get_raised_by_context(self.raised_by, self.ticket_type)
         # Always recomputed on insert: the label must come from the
         # requester's roles, never from a value posted by the client.
         self.custom_raised_by_label = ctx.get("raised_by_label")
@@ -858,7 +859,14 @@ class HDTicket(Document):
             frappe.db.exists("Student Master", {"official_email_id": self.raised_by})
         if is_student:
             return f"{root_uri}/student-portal/support?ticket={self.name}"
+        if applicant_url := self.get_applicant_portal_uri():
+            return applicant_url
         return f"{root_uri}/helpdesk/my-tickets/{self.name}"
+
+    def get_applicant_portal_uri(self):
+        # NLSAT applicants use the helpdesk inside their admission portal, on
+        # the domestic or international portal's own domain
+        return get_nlsat_applicant_helpdesk_url(self.raised_by, self.ticket_type)
 
     def check_escalation_read_only(self):
         """

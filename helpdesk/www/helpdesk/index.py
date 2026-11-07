@@ -10,6 +10,7 @@ from helpdesk.utils import get_agent_name
 no_cache = 1
 
 
+
 def get_context(context):
     frappe.db.commit()
     context.boot = get_boot()
