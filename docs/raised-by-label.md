@@ -118,6 +118,31 @@ Patch `backfill_ticket_raised_by_label` sets the label on existing tickets
 and fills empty Name / ID. It syncs fixtures first, because fixtures normally
 sync after patches and the column would not exist yet on the first migrate.
 
+## Ticket link in reply emails to NLSAT applicants
+
+`HDTicket.portal_uri` (the `ticket_url` in the agent-reply email) points
+students to `/student-portal/support`, NLSAT applicants (`Applicant` role) to
+the helpdesk inside their admission portal, everyone else to
+`/helpdesk/my-tickets/<name>`.
+
+`helpdesk/api/nlsat_portal.py` → `get_nlsat_applicant_helpdesk_url(raised_by,
+ticket_type)` returns `https://<portal domain>/nlsat/helpdesk`:
+
+- Domestic: `nlsatadmissions.nls.ac.in`; International:
+  `internationaladmissions.nls.ac.in`. The domain is read from slcm's Site
+  Domain Settings (`slcm.admission.utils.nlsat_portal.get_portal_domain`);
+  these two are the fallback when none is set. `frappe.utils.get_url()` can't
+  be used: it always gives the site's host_name.
+- Domestic vs International: the application's `foriegn_national`, then the
+  ticket's NLSAT type, then the portal the user signed up on
+  (`User.nlsat_portal`), else Domestic. Unlike the Raised By label, the
+  `nlsat_portal` cookie is not used: the email is sent from the agent's
+  request, so it would be the agent's cookie.
+- `/nlsat/helpdesk` opens the helpdesk list, not the ticket itself (slcm's page
+  always loads `/helpdesk` in its iframe).
+
+Tests: `helpdesk/api/test_nlsat_portal.py`.
+
 ## Frontend
 
 `raisedByFieldLabel(fieldname, label, doc)` in `desk/src/utils.ts` turns the
