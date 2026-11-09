@@ -39,12 +39,9 @@
     </div>
 
     <!-- Scrollable sections: Ticket Info + Recent / Similar Tickets -->
-    <div
-      class="border-t flex-1 min-h-0 overflow-y-auto divide-y-[1px]"
-      v-if="Boolean(customFields.length) || showRecentSimilarTickets"
-    >
-      <!-- Ticket Info (custom fields) -->
-      <div v-if="Boolean(customFields.length)">
+    <div class="border-t flex-1 min-h-0 overflow-y-auto divide-y-[1px]">
+      <!-- Ticket Info (ticket ID + custom fields) -->
+      <div>
         <Section label="Ticket Info" v-model:opened="openedSections.ticketInfo">
           <template #header="{ opened, toggle }">
             <div
@@ -60,10 +57,17 @@
               />
             </div>
           </template>
-          <div
-            class="space-y-1.5 px-4 mb-2 mt-0.5"
-            v-if="Boolean(customFields.length)"
-          >
+          <div class="space-y-1.5 px-4 mb-2 mt-0.5">
+            <div class="flex gap-2 pb-1 leading-5 items-center">
+              <div class="w-[106px] shrink-0 truncate text-sm text-ink-gray-5">
+                {{ __("Ticket ID") }}
+              </div>
+              <div
+                class="min-h-[28px] flex flex-1 items-center overflow-hidden px-2 text-base text-ink-gray-8 select-all"
+              >
+                {{ ticket.doc?.name }}
+              </div>
+            </div>
             <template v-for="field in customFields">
               <TicketField
                 v-if="field.visible"
