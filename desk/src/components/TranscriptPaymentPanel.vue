@@ -34,12 +34,19 @@
     </div>
 
     <Button
-      v-if="paymentRequired && state !== 'paid'"
+      v-if="state === 'pending'"
+      :label="__('Check payment status')"
+      theme="gray"
+      variant="subtle"
+      @click="recheckReturn"
+    />
+    <Button
+      v-else-if="paymentRequired && state !== 'paid'"
       :label="payButtonLabel"
       theme="gray"
       variant="solid"
-      :loading="state === 'creating' || state === 'ordering' || state === 'verifying'"
-      :disabled="!ready || state === 'creating' || state === 'ordering' || state === 'verifying'"
+      :loading="busy"
+      :disabled="!ready || busy"
       @click="startPayment"
     />
     <div
@@ -64,7 +71,7 @@
 
 <script setup lang="ts">
 import { Button, FeatherIcon, call } from "frappe-ui";
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { __ } from "@/translation";
 
 interface P {
@@ -76,6 +83,9 @@ interface P {
   // this panel knows to throw away a stale unpaid Transcript Request and
   // start over rather than let the student pay for the wrong thing.
   resetKey: number;
+  // Easebuzz txnid when the student has just come back from the hosted
+  // checkout (Easebuzz is a full-page redirect, unlike Razorpay's popup).
+  returnRef?: string;
 }
 
 interface E {
@@ -93,6 +103,11 @@ interface E {
     }
   ): void;
   (event: "reset"): void;
+  // Back from an unpaid Easebuzz checkout: refill the form for a retry.
+  (
+    event: "restore",
+    payload: { transcriptType: string; numCopies: number | string; purpose: string; deliveryMode: string }
+  ): void;
 }
 
 const props = defineProps<P>();
@@ -100,10 +115,16 @@ const emit = defineEmits<E>();
 
 // idle -> creating (Transcript Request draft) -> ordering (Razorpay order)
 // -> awaiting (checkout open) -> verifying (confirm_payment) -> paid
+// Easebuzz: ordering -> redirecting (left for the hosted page); on return
+// verifying -> paid | error | pending (bank still confirming)
 // any step can fall back to "error"
 const state = ref<
-  "idle" | "creating" | "ordering" | "awaiting" | "verifying" | "paid" | "error"
+  | "idle" | "creating" | "ordering" | "redirecting" | "awaiting" | "verifying"
+  | "paid" | "error" | "pending"
 >("idle");
+const busy = computed(() =>
+  ["creating", "ordering", "redirecting", "verifying"].includes(state.value)
+);
 const feeAmount = ref<number | null>(null);
 const paymentRequired = ref(false);
 const requestName = ref<string | null>(null);
@@ -125,6 +146,7 @@ const ready = computed(
 const payButtonLabel = computed(() => {
   if (state.value === "creating") return __("Preparing…");
   if (state.value === "ordering") return __("Opening payment…");
+  if (state.value === "redirecting") return __("Redirecting to payment…");
   if (state.value === "verifying") return __("Verifying payment…");
   return feeAmount.value !== null
     ? __("Pay ₹{0}", String(feeAmount.value))
@@ -137,7 +159,7 @@ const payButtonLabel = computed(() => {
 watch(
   () => [props.transcriptType, props.numCopies],
   () => {
-    if (state.value === "idle") fetchPreview();
+    if (state.value === "idle" || state.value === "error") fetchPreview();
   }
 );
 
@@ -161,9 +183,92 @@ watch(
 const resumed = ref(false);
 
 onMounted(async () => {
-  await checkForResume();
+  window.addEventListener("pageshow", onPageShow);
+  if (props.returnRef) await handleGatewayReturn(props.returnRef);
+  else await checkForResume();
   if (state.value === "idle") fetchPreview();
 });
+
+onBeforeUnmount(() => window.removeEventListener("pageshow", onPageShow));
+
+// Back button from the Easebuzz page can restore this page from the bfcache
+// still stuck on "Redirecting…" — unlock it so the student can try again.
+function onPageShow(e: PageTransitionEvent) {
+  if (e.persisted && state.value === "redirecting") state.value = "idle";
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function handleGatewayReturn(ref: string) {
+  state.value = "verifying";
+  errorMessage.value = "";
+  try {
+    // get_payment_result asks Easebuzz itself while the checkout is still
+    // unsettled; the bank can take a few seconds after the redirect.
+    let result: any = null;
+    for (let tries = 0; tries < 5; tries++) {
+      if (tries) await sleep(3000);
+      result = await call("slcm.api.easebuzz_payment.get_payment_result", {
+        payment_ref: ref,
+      });
+      if (result?.status !== "pending") break;
+    }
+    const req = await call("slcm.api.transcript_request.get_gateway_return_request", {
+      payment_ref: ref,
+    });
+    if (!req) {
+      // Already on a ticket (e.g. submitted from another tab) or cancelled.
+      state.value = "idle";
+      await checkForResume();
+      return;
+    }
+    requestName.value = req.name;
+    feeAmount.value = req.fee_amount;
+    paymentRequired.value = Boolean(req.payment_required);
+    paidForType.value = req.transcript_type;
+    paidForCopies.value = req.num_copies;
+    if (req.payment_status === "Paid") {
+      paymentId.value = req.payment_reference || null;
+      state.value = "paid";
+      emit("paid", {
+        requestName: req.name,
+        feeAmount: req.fee_amount,
+        transcriptType: req.transcript_type,
+        numCopies: req.num_copies,
+        purpose: req.purpose,
+        deliveryMode: req.delivery_mode,
+      });
+      return;
+    }
+    emit("restore", {
+      transcriptType: req.transcript_type,
+      numCopies: req.num_copies,
+      purpose: req.purpose || "",
+      deliveryMode: req.delivery_mode || "",
+    });
+    if (result?.status === "pending") {
+      // Paying again now could charge twice — make them check back instead.
+      state.value = "pending";
+      errorMessage.value = __(
+        "Your payment is still being confirmed by the bank. Please check again in a few minutes before paying again."
+      );
+    } else {
+      state.value = "error";
+      errorMessage.value =
+        result?.status === "cancelled"
+          ? __("Payment was cancelled. No money was taken.")
+          : __("Payment did not go through. Please try again.");
+    }
+  } catch (e: any) {
+    state.value = "error";
+    errorMessage.value =
+      e?.messages?.[0] || e?.message || __("Could not check the payment status.");
+  }
+}
+
+function recheckReturn() {
+  if (props.returnRef) handleGatewayReturn(props.returnRef);
+}
 
 async function checkForResume() {
   // Payment can succeed and then the ticket-creation step never completes
@@ -220,6 +325,7 @@ async function startPayment() {
       num_copies: props.numCopies || 1,
       purpose: props.purpose,
       delivery_mode: props.deliveryMode,
+      reuse_unpaid: 1,
     });
     requestName.value = created.name;
     feeAmount.value = created.fee_amount;
@@ -241,7 +347,14 @@ async function startPayment() {
     state.value = "ordering";
     const order = await call("slcm.api.transcript_request.initiate_payment", {
       request_name: created.name,
+      gateway_aware: 1,
+      return_path: "/student-portal/support?new=1",
     });
+
+    if (order?.gateway === "Easebuzz" && order.checkout_url) {
+      redirectToCheckout(order.checkout_url);
+      return;
+    }
 
     await loadRazorpayScript();
     openCheckout(order);
@@ -249,6 +362,18 @@ async function startPayment() {
     state.value = "error";
     errorMessage.value =
       e?.messages?.[0] || e?.message || __("Could not start payment. Please try again.");
+  }
+}
+
+// Easebuzz's hosted checkout can't run inside the Student Portal's Helpdesk
+// iframe, so navigate the whole tab; it comes back to the portal Helpdesk
+// form with ?payment_ref=<txnid>.
+function redirectToCheckout(url: string) {
+  state.value = "redirecting";
+  try {
+    (window.top || window).location.assign(url);
+  } catch {
+    window.location.assign(url);
   }
 }
 

@@ -62,7 +62,9 @@
         :purpose="templateFields.custom_transcript_purpose"
         :delivery-mode="templateFields.custom_transcript_delivery_mode"
         :reset-key="paymentResetKey"
+        :return-ref="gatewayReturnRef"
         @paid="onTranscriptPaid"
+        @restore="onTranscriptRestore"
       />
 
       <!-- existing fields -->
@@ -213,6 +215,16 @@ const paidForValues = ref<string | null>(null);
 // created/paid and start over, whenever an input the fee/eligibility
 // depends on changes after a payment was already made for the old values.
 const paymentResetKey = ref(0);
+// Easebuzz checkouts are a full-page redirect that comes back here (via the
+// Student Portal's /student-portal/support?new=1, which forwards it into
+// this iframe) with ?payment_ref=<txnid>. Read it once and drop it from the
+// URL so a refresh doesn't replay it.
+const gatewayReturnRef = (route.query.payment_ref as string) || "";
+if (gatewayReturnRef) {
+  const query = { ...route.query };
+  delete query.payment_ref;
+  router.replace({ query });
+}
 
 watch(
   () => [
@@ -255,6 +267,18 @@ function onTranscriptPaid(payload: {
   if (payload.deliveryMode) templateFields.custom_transcript_delivery_mode = payload.deliveryMode;
 }
 
+function onTranscriptRestore(payload: {
+  transcriptType: string;
+  numCopies: number | string;
+  purpose: string;
+  deliveryMode: string;
+}) {
+  templateFields.custom_transcript_type = payload.transcriptType;
+  templateFields.custom_transcript_num_copies = payload.numCopies;
+  templateFields.custom_transcript_purpose = payload.purpose;
+  templateFields.custom_transcript_delivery_mode = payload.deliveryMode;
+}
+
 const template = createResource({
   url: "helpdesk.helpdesk.doctype.hd_ticket_template.api.get_one",
   makeParams: () => ({
@@ -271,6 +295,13 @@ const template = createResource({
       $dialog,
       applyFilters,
       setAbout: (html: string) => { template.data.about = html; },
+    }).finally(() => {
+      // Back from an Easebuzz transcript checkout: reopen the Transcript
+      // Request form (through its onChange, as if the student picked it) so
+      // the payment panel mounts and picks the request back up.
+      if (gatewayReturnRef) {
+        handleOnFieldChange({ value: "Transcript Request" }, "ticket_type", "Select");
+      }
     });
     setupTemplateFields(data.fields);
   },
