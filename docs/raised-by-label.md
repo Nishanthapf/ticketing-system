@@ -121,9 +121,16 @@ sync after patches and the column would not exist yet on the first migrate.
 ## Ticket link in reply emails to NLSAT applicants
 
 `HDTicket.portal_uri` (the `ticket_url` in the agent-reply email) points
-students to `/student-portal/support`, NLSAT applicants (`Applicant` role) to
-the helpdesk inside their admission portal, everyone else to
+NLSAT applicants (`Applicant` role without `slcm_Student`) to the helpdesk
+inside their admission portal, students (a Student Master record by `user`,
+`email` or `official_email_id`) to `/student-portal/support`, everyone else to
 `/helpdesk/my-tickets/<name>`.
+
+The applicant check runs before the Student Master check: an applicant can
+already have a Student Master record (e.g. test data, or one created before the
+role swap to `slcm_Student`) and was wrongly sent to `app.nls.ac.in/student-portal`.
+Once the user has `slcm_Student` (set by slcm's applicant→student conversion),
+they are treated as a student.
 
 `helpdesk/api/nlsat_portal.py` → `get_nlsat_applicant_helpdesk_url(raised_by,
 ticket_type)` returns `https://<portal domain>/nlsat/helpdesk`:

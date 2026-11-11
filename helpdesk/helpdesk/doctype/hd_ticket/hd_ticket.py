@@ -853,14 +853,15 @@ class HDTicket(Document):
     @property
     def portal_uri(self):
         root_uri = frappe.utils.get_url()
-        # Check if the ticket was raised by a student; if so, link to the student portal
+        # Checked before Student Master: an applicant (not yet slcm_Student) can
+        # already have a Student Master record and must still get their admission portal
+        if applicant_url := self.get_applicant_portal_uri():
+            return applicant_url
         is_student = frappe.db.exists("Student Master", {"user": self.raised_by}) or \
             frappe.db.exists("Student Master", {"email": self.raised_by}) or \
             frappe.db.exists("Student Master", {"official_email_id": self.raised_by})
         if is_student:
             return f"{root_uri}/student-portal/support?ticket={self.name}"
-        if applicant_url := self.get_applicant_portal_uri():
-            return applicant_url
         return f"{root_uri}/helpdesk/my-tickets/{self.name}"
 
     def get_applicant_portal_uri(self):
