@@ -10,12 +10,12 @@ separate domains), not the agent desk on the site's host_name.
 import frappe
 
 from helpdesk.api.nls_student import (
-	NLSAT_APPLICANT_ROLE,
 	NLSAT_DOMESTIC_TICKET_TYPE,
 	NLSAT_INTERNATIONAL_TICKET_TYPE,
 	NLSAT_TICKET_TYPES,
 	_get_nlsat_application,
 	_get_nlsat_ticket_type,
+	is_nlsat_applicant,
 )
 from helpdesk.api.raised_by import resolve_user
 
@@ -38,10 +38,10 @@ def get_nlsat_applicant_helpdesk_url(raised_by: str, ticket_type: str | None = N
 	"""
 	https://<portal domain>/nlsat/helpdesk for a ticket raised by an NLSAT
 	applicant, on the domestic or international portal's domain. None when
-	`raised_by` is not an NLSAT applicant.
+	`raised_by` is not an NLSAT applicant, or has since enrolled (slcm_Student).
 	"""
 	user = resolve_user(raised_by)
-	if not user or NLSAT_APPLICANT_ROLE not in frappe.get_roles(user):
+	if not user or not is_nlsat_applicant(frappe.get_roles(user)):
 		return None
 
 	ticket_type = get_applicant_ticket_type(user, ticket_type)

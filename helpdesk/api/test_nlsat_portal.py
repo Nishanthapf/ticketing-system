@@ -18,6 +18,7 @@ USER_EMAIL = "nlsat-portal-test@example.com"
 DOMESTIC_URL = "https://nlsatadmissions.nls.ac.in/nlsat/helpdesk"
 INTERNATIONAL_URL = "https://internationaladmissions.nls.ac.in/nlsat/helpdesk"
 MODULE = "helpdesk.api.nlsat_portal"
+NLSAT_STUDENT_ROLE = "slcm_Student"
 
 
 class TestNlsatPortal(IntegrationTestCase):
@@ -81,3 +82,30 @@ class TestNlsatPortal(IntegrationTestCase):
 		self.assertEqual(
 			ticket.portal_uri, frappe.utils.get_url("/helpdesk/my-tickets/TEST-1")
 		)
+
+	def test_applicant_with_student_master_gets_admission_portal(self):
+		ticket = make_ticket(save=False, raised_by=USER_EMAIL)
+		ticket.name = "TEST-1"
+		exists = frappe.db.exists
+
+		def student_master_exists(doctype, *args, **kwargs):
+			return doctype == "Student Master" or exists(doctype, *args, **kwargs)
+
+		with (
+			patch(f"{MODULE}._get_nlsat_application", return_value=None),
+			patch.object(frappe.db, "exists", side_effect=student_master_exists),
+		):
+			self.assertEqual(ticket.portal_uri, DOMESTIC_URL)
+
+			make_role(NLSAT_STUDENT_ROLE)
+			self.user.add_roles(NLSAT_STUDENT_ROLE)
+			self.assertEqual(
+				ticket.portal_uri, frappe.utils.get_url("/student-portal/support?ticket=TEST-1")
+			)
+		self.user.remove_roles(NLSAT_STUDENT_ROLE)
+
+	def test_enrolled_applicant_gets_no_portal_url(self):
+		make_role(NLSAT_STUDENT_ROLE)
+		self.user.add_roles(NLSAT_STUDENT_ROLE)
+		self.assertIsNone(self.helpdesk_url("Yes"))
+		self.user.remove_roles(NLSAT_STUDENT_ROLE)
