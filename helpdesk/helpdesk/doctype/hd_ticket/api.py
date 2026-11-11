@@ -49,6 +49,38 @@ def new(doc: dict, attachments: list[dict] = []):
     return d
 
 
+# Portal writes go through these dedicated endpoints instead of
+# frappe.client.set_value / run_doc_method, which slcm's api_guard blocks for
+# Applicant-only website users.
+@frappe.whitelist(methods=["POST"])
+def close_ticket_by_contact(
+    name: str, feedback: str | None = None, feedback_extra: str | None = None
+):
+    ticket = frappe.get_doc("HD Ticket", name)
+    ticket.close_by_contact(feedback, feedback_extra)
+
+
+@frappe.whitelist(methods=["POST"])
+def reply_by_contact(name: str, message: str, attachments: list[dict] | None = None):
+    ticket = frappe.get_doc("HD Ticket", name)
+    ticket.reply_by_contact(message, attachments)
+
+
+@frappe.whitelist(methods=["POST"])
+def reopen_ticket_by_contact(name: str, reason: str):
+    ticket = frappe.get_doc("HD Ticket", name)
+    ticket.reopen_ticket(reason)
+
+
+@frappe.whitelist(methods=["POST"])
+def remove_pending_attachment(name: str):
+    """Delete a file the user uploaded in the editor but has not sent yet."""
+    file = frappe.get_doc("File", name)
+    if file.owner != frappe.session.user or file.attached_to_name:
+        frappe.throw(_("Not permitted"), frappe.PermissionError)
+    file.delete(ignore_permissions=True)
+
+
 @frappe.whitelist()
 def get_one(name: str, is_customer_portal: bool = False):
     frappe.has_permission("HD Ticket", "read", name, throw=True)

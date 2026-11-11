@@ -38,6 +38,14 @@ NLSAT_APPLICATION_FIELDS = [
 # SLA and routing details are internal; applicants only see what they need to track a ticket
 NLSAT_APPLICANT_HIDDEN_LIST_FIELDS = {"response_by", "resolution_by", "agent_group"}
 
+# Student-only fields, meaningless for an applicant who has no student record
+# yet; Raised By because an applicant only sees their own tickets anyway
+NLSAT_APPLICANT_HIDDEN_QUICK_FILTERS = {
+	"custom_student_id",
+	"custom_current_year",
+	"custom_raised_by_label",
+}
+
 
 def is_nlsat_applicant(roles: list | None = None) -> bool:
 	roles = roles if roles is not None else frappe.get_roles()

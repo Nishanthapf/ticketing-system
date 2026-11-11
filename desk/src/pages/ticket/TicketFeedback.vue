@@ -9,12 +9,9 @@
         theme: 'gray',
         variant: 'solid',
         onClick: () =>
-          setValue.submit({
-            fieldname: {
-              status: 'Closed',
-              feedback: preset,
-              feedback_extra: text,
-            },
+          closeTicket.submit({
+            feedback: preset,
+            feedback_extra: text,
           }),
       },
     ]"
@@ -61,7 +58,7 @@
 
 <script setup lang="ts">
 import { StarRating } from "@/components";
-import { createListResource, createResource } from "frappe-ui";
+import { createListResource, createResource, toast } from "frappe-ui";
 import { inject, ref, watch } from "vue";
 import { ITicket } from "./symbols";
 import { __ } from "@/translation";
@@ -85,17 +82,14 @@ const options = createListResource({
   fields: ["name", "label"],
   pageLength: 99999,
 });
-const setValue = createResource({
-  url: "frappe.client.set_value",
+const closeTicket = createResource({
+  url: "helpdesk.helpdesk.doctype.hd_ticket.api.close_ticket_by_contact",
   debounce: 300,
-  makeParams: (params) => {
-    return {
-      doctype: "HD Ticket",
-      name: ticket.data.name,
-      fieldname: params.fieldname,
-      value: params.value,
-    };
-  },
+  makeParams: (params) => ({
+    name: ticket.data.name,
+    feedback: params.feedback,
+    feedback_extra: params.feedback_extra,
+  }),
   onSuccess: () => {
     emit("update:open", false);
     ticket.reload();

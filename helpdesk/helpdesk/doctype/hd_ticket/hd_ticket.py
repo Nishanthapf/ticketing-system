@@ -13,11 +13,19 @@ from frappe.desk.form.assign_to import get as get_assignees
 from frappe.model.document import Document
 from frappe.permissions import add_permission, update_permission_property
 from frappe.query_builder import DocType, Order
-from frappe.utils import add_to_date, cint, get_datetime, getdate, now_datetime
+from frappe.utils import (
+    add_to_date,
+    cint,
+    get_datetime,
+    getdate,
+    now_datetime,
+    strip_html,
+)
 from pypika.functions import Count
 from pypika.queries import Query
 from pypika.terms import Criterion
 
+from helpdesk.api.nlsat_portal import get_nlsat_applicant_helpdesk_url
 from helpdesk.helpdesk.doctype.hd_settings.helpers import (
     get_default_email_content,
     is_email_content_empty,
@@ -98,11 +106,20 @@ class HDTicket(Document):
         self.set_customer()
 
     def validate(self):
+        self.validate_portal_description()
         self.validate_feedback()
         self.validate_reply_on_close()
         self.validate_transcript_fields()
         if self.agent_group:
             start_escalation_if_enabled(self)
+
+    def validate_portal_description(self):
+        # Not reqd on the DocType: tickets created from incoming email may
+        # legitimately have an empty body.
+        if not self.is_new() or not self.via_customer_portal:
+            return
+        if not strip_html(self.description or "").strip():
+            frappe.throw(_("Description is required"), frappe.MandatoryError)
 
     def validate_transcript_fields(self):
         # These Custom Fields can't be reqd=1: Frappe enforces reqd on every
@@ -135,15 +152,19 @@ class HDTicket(Document):
         return category in ("Resolved", "Closed")
 
     def validate_reply_on_close(self):
-        if self.flags.ignore_validate or self.get("is_merged"):
+        # The rule stops agents closing unanswered tickets; a raiser who confirmed
+        # closing their own unanswered ticket from the portal is exempt.
+        if (
+            self.flags.ignore_validate
+            or self.flags.closed_by_contact
+            or self.get("is_merged")
+        ):
             return
 
-        try:
-            from helpdesk.helpdesk.api.nls_student import AUTO_CLOSE_TYPES
-            if self.get("ticket_type") in AUTO_CLOSE_TYPES:
-                return
-        except ImportError:
-            pass
+        from helpdesk.api.nls_student import AUTO_CLOSE_TYPES
+
+        if self.get("ticket_type") in AUTO_CLOSE_TYPES:
+            return
 
         if self.is_closing_status():
             if not self.has_agent_replied:
@@ -412,7 +433,7 @@ class HDTicket(Document):
 
         from helpdesk.api.raised_by import get_raised_by_context
 
-        ctx = get_raised_by_context(self.raised_by)
+        ctx = get_raised_by_context(self.raised_by, self.ticket_type)
         # Always recomputed on insert: the label must come from the
         # requester's roles, never from a value posted by the client.
         self.custom_raised_by_label = ctx.get("raised_by_label")
@@ -737,6 +758,52 @@ class HDTicket(Document):
         log_ticket_activity(self.name, _("reopened the ticket: {0}").format(reason))
         on_reopen(self)
 
+    def check_contact_access(self):
+        """
+        Gate for the portal endpoints (close / reply by contact). Agents use the
+        agent-side actions, which keep the agent-only validations.
+
+        Ownership is checked directly instead of role-level "write": Custom
+        DocPerm differs per site (not shipped as a fixture), and on sites where
+        Applicant has only read/create the contact could not close or reply to
+        their own ticket.
+        """
+        user = frappe.session.user
+        is_ticket_contact = user in (
+            self.contact,
+            self.raised_by,
+            self.owner,
+        ) or _is_customer_manager(self.customer, user)
+        if (
+            is_agent()
+            or not is_ticket_contact
+            or not frappe.has_permission("HD Ticket", "read", self)
+        ):
+            frappe.throw(_("Not permitted"), frappe.PermissionError)
+
+    def close_by_contact(
+        self, feedback: str | None = None, feedback_extra: str | None = None
+    ):
+        self.check_contact_access()
+        if self.status == "Closed":
+            frappe.throw(_("This ticket is already closed."))
+
+        self.status = "Closed"
+        if feedback:
+            self.feedback = feedback
+        if feedback_extra:
+            self.feedback_extra = feedback_extra
+        self.flags.closed_by_contact = True
+        # Permission was checked in check_contact_access; Applicant-only users
+        # cannot go through the generic write path (slcm api_guard).
+        self.save(ignore_permissions=True)
+
+    def reply_by_contact(self, message: str, attachments: list[dict] | None = None):
+        self.check_contact_access()
+        if self.status == "Closed":
+            frappe.throw(_("Closed tickets cannot be replied to. Please reopen it first."))
+        self.create_communication_via_contact(message, attachments or [])
+
     @frappe.whitelist()
     def get_last_communication(self):
         filters = {
@@ -792,7 +859,14 @@ class HDTicket(Document):
             frappe.db.exists("Student Master", {"official_email_id": self.raised_by})
         if is_student:
             return f"{root_uri}/student-portal/support?ticket={self.name}"
+        if applicant_url := self.get_applicant_portal_uri():
+            return applicant_url
         return f"{root_uri}/helpdesk/my-tickets/{self.name}"
+
+    def get_applicant_portal_uri(self):
+        # NLSAT applicants use the helpdesk inside their admission portal, on
+        # the domestic or international portal's own domain
+        return get_nlsat_applicant_helpdesk_url(self.raised_by, self.ticket_type)
 
     def check_escalation_read_only(self):
         """

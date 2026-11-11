@@ -10,7 +10,7 @@
     </div>
 
     <div
-      v-for="data in slaData"
+      v-for="data in authStore.isNlsatApplicant ? [] : slaData"
       :key="data.label"
       class="flex items-center gap-4"
     >
@@ -57,10 +57,13 @@
 import { dayjs } from "frappe-ui";
 import { Field } from "@/types";
 import { raisedByFieldLabel } from "@/utils";
+import { useAuthStore } from "@/stores/auth";
+import { NLSAT_APPLICANT_FIELDS, raisedByFieldLabel } from "@/utils";
 import { computed, inject } from "vue";
 import { ITicket } from "./symbols";
 
 const ticket = inject(ITicket);
+const authStore = useAuthStore();
 
 const slaData = computed(() => {
   const responseSla =
@@ -112,6 +115,10 @@ const customFields = computed(() => {
     .filter(
       (f: Field) => ["subject", "team", "priority"].indexOf(f.fieldname) === -1
     );
-  return _custom_fields;
+  if (!authStore.isNlsatApplicant) return _custom_fields;
+
+  return NLSAT_APPLICANT_FIELDS.map((fieldname) =>
+    _custom_fields.find((field: Field) => field.fieldname === fieldname)
+  ).filter(Boolean);
 });
 </script>

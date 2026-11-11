@@ -419,7 +419,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-10-14 12:00:00.000000",
+  "modified": "2026-10-14 12:00:00",
   "name": "Default",
   "template_name": "Default"
  },
@@ -514,7 +514,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-09-24 12:00:00.000000",
+  "modified": "2026-09-24 12:00:00",
   "name": "Academics",
   "template_name": "Academics"
  },
@@ -609,7 +609,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-09-24 12:00:00.000000",
+  "modified": "2026-09-24 12:00:00",
   "name": "Facilities",
   "template_name": "Facilities"
  },
@@ -669,7 +669,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-09-24 12:00:00.000000",
+  "modified": "2026-09-24 12:00:00",
   "name": "Finance",
   "template_name": "Finance"
  },
@@ -803,7 +803,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-09-24 12:00:00.000000",
+  "modified": "2026-09-24 12:00:00",
   "name": "IT",
   "template_name": "IT"
  },
@@ -859,87 +859,6 @@
   "modified": "2026-06-01 12:59:52.303074",
   "name": "Library",
   "template_name": "Library"
- },
- {
-  "about": null,
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_contact_number",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_accession_no",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_book_title",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_book_author",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_opac_link",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.311085",
-  "name": "Library Book Request",
-  "template_name": "Library Book Request"
  },
  {
   "about": null,
@@ -1036,7 +955,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-09-24 12:00:00.000000",
+  "modified": "2026-09-24 12:00:00",
   "name": "PACE",
   "template_name": "PACE"
  },
@@ -1166,443 +1085,6 @@
   "modified": "2026-06-01 12:59:52.341686",
   "name": "Electric Appliance Declaration",
   "template_name": "Electric Appliance Declaration"
- },
- {
-  "about": null,
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_term",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_hostel",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_room_no",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_nomination_post",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_sop",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.351532",
-  "name": "Nominations",
-  "template_name": "Nominations"
- },
- {
-  "about": null,
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_term",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_hostel",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_room_no",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_sba_committee",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_sba_q1",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_sba_q2",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_sba_q3",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_sba_other_comments",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.363140",
-  "name": "SBA Committee Application",
-  "template_name": "SBA Committee Application"
- },
- {
-  "about": null,
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_term",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_contact_number",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.381363",
-  "name": "Grade",
-  "template_name": "Grade"
- },
- {
-  "about": null,
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_term",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_contact_number",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.391389",
-  "name": "Internship",
-  "template_name": "Internship"
- },
- {
-  "about": null,
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_term",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_contact_number",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.401685",
-  "name": "Electives",
-  "template_name": "Electives"
- },
- {
-  "about": "<p>Please use this form to intimate your roommate choice. This request does not constitute confirmation of room-mate or room allotment. The room will be allocated only to students already resident in the hostels and not debarred by any disciplinary proceedings. Only one form should be submitted for a room on behalf of all roommates.</p>",
-  "description_template": null,
-  "docstatus": 0,
-  "doctype": "HD Ticket Template",
-  "fields": [
-   {
-    "fieldname": "ticket_type",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_ticket_types"
-   },
-   {
-    "fieldname": "custom_student_name",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_student_id",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_programme",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_current_year",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_hostel",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_room_no",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": null
-   },
-   {
-    "fieldname": "custom_roommate_1",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 1,
-    "url_method": "helpdesk.api.nls_student.get_in_campus_students"
-   },
-   {
-    "fieldname": "custom_roommate_2",
-    "hide_from_customer": 0,
-    "placeholder": null,
-    "required": 0,
-    "url_method": "helpdesk.api.nls_student.get_in_campus_students"
-   }
-  ],
-  "modified": "2026-06-01 12:59:52.411760",
-  "name": "Roommate Intimation",
-  "template_name": "Roommate Intimation"
  },
  {
   "about": "<p><strong>Travel &amp; Transportation Request (2024-25)</strong></p><ul><li>Use this form to request a campus vehicle for official or personal travel.</li><li>Driver and car assignment is subject to availability.</li><li>Trip log fields (KM, time, extra charges) are filled in after the trip is completed.</li></ul>",

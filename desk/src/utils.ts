@@ -17,6 +17,16 @@ import TicketIcon from "./components/icons/TicketIcon.vue";
 import { getMeta } from "./stores/meta";
 import { __ } from "./translation";
 
+// NLSAT applicants share the student ticket template, most of whose fields
+// (hostel, transport, transcript, ...) never apply to them. Only these are
+// shown to them, in this order, on both desktop and mobile ticket views.
+export const NLSAT_APPLICANT_FIELDS = [
+  "subject",
+  "ticket_type",
+  "custom_type_of_issue",
+  "custom_programme",
+];
+
 // Requester fields whose label is prefixed with the ticket's Raised By label
 // (HD Settings > Ticket Settings > Raised By Label), e.g. "Applicant ID".
 const RAISED_BY_FIELD_SUFFIX: Record<string, string> = {
@@ -683,6 +693,14 @@ export function validateConditions(conditions: any[]): boolean {
   }
 
   return conditions.length > 0;
+}
+
+// frappe.client.delete is blocked for applicant-only users (slcm api_guard),
+// so portal editors remove their unsent uploads through this endpoint.
+export async function removePendingAttachment(attachment: string) {
+  await call("helpdesk.helpdesk.doctype.hd_ticket.api.remove_pending_attachment", {
+    name: attachment,
+  });
 }
 
 export async function removeAttachmentFromServer(attachment: string) {

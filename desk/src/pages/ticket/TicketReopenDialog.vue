@@ -56,12 +56,10 @@ watch(
 );
 
 const reopen = createResource({
-  url: "run_doc_method",
+  url: "helpdesk.helpdesk.doctype.hd_ticket.api.reopen_ticket_by_contact",
   makeParams: () => ({
-    dt: "HD Ticket",
-    dn: ticket.data.name,
-    method: "reopen_ticket",
-    args: { reason: reason.value.trim() },
+    name: ticket.data.name,
+    reason: reason.value.trim(),
   }),
   onSuccess: () => {
     toast.success(__("Ticket reopened."));

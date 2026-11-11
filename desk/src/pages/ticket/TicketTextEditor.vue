@@ -25,7 +25,7 @@
                     'update:attachments',
                     attachments.filter((b) => b.file_url !== a.file_url)
                   );
-                  removeAttachmentFromServer(a.name);
+                  removePendingAttachment(a.name);
                 }
               "
             />
@@ -89,7 +89,7 @@ import {
 } from "@/components";
 import { useAuthStore } from "@/stores/auth";
 import { File } from "@/types";
-import { removeAttachmentFromServer } from "@/utils";
+import { removePendingAttachment } from "@/utils";
 import { FileUploader, toast } from "frappe-ui";
 import { computed, ref } from "vue";
 

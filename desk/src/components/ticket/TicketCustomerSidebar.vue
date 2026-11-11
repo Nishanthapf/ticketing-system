@@ -120,6 +120,7 @@ import {
   dateFormat,
   dateTooltipFormat,
   formatTime,
+  NLSAT_APPLICANT_FIELDS,
   raisedByFieldLabel,
 } from "@/utils";
 import { Avatar, dayjs, Tooltip } from "frappe-ui";
@@ -129,15 +130,6 @@ const emit = defineEmits(["open"]);
 
 const ticket = inject(ITicket);
 const authStore = useAuthStore();
-
-// NLSAT applicants share the student ticket template, most of whose fields
-// (hostel, transport, transcript, ...) never apply to them.
-const NLSAT_APPLICANT_FIELDS = [
-  "subject",
-  "ticket_type",
-  "custom_type_of_issue",
-  "custom_programme",
-];
 
 const slaData = computed(() => {
   const firstResponse = firstResponseData();

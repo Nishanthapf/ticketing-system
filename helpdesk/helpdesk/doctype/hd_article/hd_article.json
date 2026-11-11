@@ -90,7 +90,7 @@
  ],
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-06-28 13:55:21.075010",
+ "modified": "2026-11-02 12:20:54.896285",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Article",
@@ -137,6 +137,15 @@
    "read": 1,
    "report": 1,
    "role": "HD Customer Manager",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "All",
    "share": 1
   }
  ],
