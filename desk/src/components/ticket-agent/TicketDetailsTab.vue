@@ -154,6 +154,7 @@ import {
   RecentSimilarTicketsSymbol,
   TicketSymbol,
 } from "@/types";
+import { raisedByFieldLabel } from "@/utils";
 import { useStorage } from "@vueuse/core";
 import { dayjs, Tooltip } from "frappe-ui";
 import { computed, inject, ref } from "vue";
@@ -291,7 +292,11 @@ function openTicket(name: string) {
 
 function getFieldInFormat(fieldTemplate, fieldMeta) {
   return {
-    label: fieldMeta?.label || fieldTemplate.fieldname,
+    label: raisedByFieldLabel(
+      fieldTemplate.fieldname,
+      fieldMeta?.label || fieldTemplate.fieldname,
+      ticket.value.doc
+    ),
     value: ticket.value.doc[fieldTemplate.fieldname],
     fieldtype: fieldMeta?.fieldtype,
     doctype: fieldMeta?.options || "",

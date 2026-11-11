@@ -154,7 +154,11 @@ import { globalStore } from "@/stores/globalStore";
 import { capture } from "@/telemetry";
 import { __ } from "@/translation";
 import { Field } from "@/types";
-import { isCustomerPortal, uploadFunction } from "@/utils";
+import {
+  isCustomerPortal,
+  raisedByFieldLabel,
+  uploadFunction,
+} from "@/utils";
 import {
   Breadcrumbs,
   Button,
@@ -339,7 +343,10 @@ const visibleFields = computed(() => {
     (f) => !isCustomerPortal.value || (!f.hide_from_customer && f.fieldname !== "priority")
   );
   if (!_fields) return [];
-  return _fields.map((field) => parseField(field, templateFields));
+  return _fields.map((field) => ({
+    ...parseField(field, templateFields),
+    label: raisedByFieldLabel(field.fieldname, field.label, templateFields),
+  }));
 });
 
 function handleOnFieldChange(e: any, fieldname: string, fieldtype: string) {

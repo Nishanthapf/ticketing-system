@@ -1625,6 +1625,20 @@
     "url_method": null
    },
    {
+    "fieldname": "custom_student_name",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
+    "fieldname": "custom_student_id",
+    "hide_from_customer": 0,
+    "placeholder": null,
+    "required": 0,
+    "url_method": null
+   },
+   {
     "fieldname": "custom_transport_requestor",
     "hide_from_customer": 0,
     "placeholder": null,
@@ -1737,7 +1751,7 @@
     "url_method": null
    }
   ],
-  "modified": "2026-06-01 12:59:52.427286",
+  "modified": "2026-11-05 10:00:00.000000",
   "name": "Travel & Transportation",
   "template_name": "Travel & Transportation"
  }

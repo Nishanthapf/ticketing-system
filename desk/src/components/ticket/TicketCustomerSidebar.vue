@@ -116,7 +116,12 @@
 import { ITicket } from "@/pages/ticket/symbols";
 import { useAuthStore } from "@/stores/auth";
 import { Field } from "@/types";
-import { dateFormat, dateTooltipFormat, formatTime } from "@/utils";
+import {
+  dateFormat,
+  dateTooltipFormat,
+  formatTime,
+  raisedByFieldLabel,
+} from "@/utils";
 import { Avatar, dayjs, Tooltip } from "frappe-ui";
 import { computed, inject } from "vue";
 
@@ -250,7 +255,7 @@ const ticketAdditionalInfo = computed(() => {
     .map((field: Field) => {
       const option = {
         fieldname: field.fieldname,
-        label: field.label,
+        label: raisedByFieldLabel(field.fieldname, field.label, ticket.data),
         value: ticket.data[field.fieldname],
       };
       if (field.fieldtype === "Date") {
