@@ -56,6 +56,7 @@
 <script setup lang="ts">
 import { dayjs } from "frappe-ui";
 import { Field } from "@/types";
+import { raisedByFieldLabel } from "@/utils";
 import { useAuthStore } from "@/stores/auth";
 import { NLSAT_APPLICANT_FIELDS, raisedByFieldLabel } from "@/utils";
 import { computed, inject } from "vue";
