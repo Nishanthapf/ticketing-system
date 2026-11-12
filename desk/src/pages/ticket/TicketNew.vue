@@ -80,11 +80,6 @@
             maxlength="140"
           />
         </div>
-        <SearchArticles
-          v-if="isCustomerPortal"
-          :query="subject"
-          class="shadow"
-        />
         <div v-if="isCustomerPortal" class="flex flex-col gap-2">
           <span class="block text-sm text-ink-gray-6">
             {{ __("Description") }}
@@ -176,7 +171,6 @@ import { useOnboarding } from "frappe-ui/frappe";
 import sanitizeHtml from "sanitize-html";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import SearchArticles from "../../components/SearchArticles.vue";
 import TranscriptPaymentPanel from "../../components/TranscriptPaymentPanel.vue";
 
 const TicketTextEditor = defineAsyncComponent(
