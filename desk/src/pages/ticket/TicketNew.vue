@@ -81,7 +81,7 @@
           />
         </div>
         <SearchArticles
-          v-if="isCustomerPortal"
+          v-if="isCustomerPortal && !authStore.hideKnowledgeBase"
           :query="subject"
           class="shadow"
         />
@@ -176,8 +176,8 @@ import { useOnboarding } from "frappe-ui/frappe";
 import sanitizeHtml from "sanitize-html";
 import { computed, defineAsyncComponent, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import SearchArticles from "../../components/SearchArticles.vue";
 import TranscriptPaymentPanel from "../../components/TranscriptPaymentPanel.vue";
+import SearchArticles from "../../components/SearchArticles.vue";
 
 const TicketTextEditor = defineAsyncComponent(
   () => import("./TicketTextEditor.vue")
@@ -195,7 +195,8 @@ const route = useRoute();
 const router = useRouter();
 const { $dialog } = globalStore();
 const { updateOnboardingStep } = useOnboarding("helpdesk");
-const { isManager, userId: userID } = useAuthStore();
+const authStore = useAuthStore();
+const { isManager, userId: userID } = authStore;
 const subject = ref("");
 const description = ref("");
 const attachments = ref([]);

@@ -53,6 +53,18 @@ def is_nlsat_applicant(roles: list | None = None) -> bool:
 	return NLSAT_APPLICANT_ROLE in roles and "slcm_Student" not in roles
 
 
+def hide_knowledge_base_for_applicant(roles: list | None = None) -> bool:
+	"""Whether the Knowledge Base is hidden from this (NLSAT applicant) user,
+	per HD Settings > Hide Knowledge Base for Applicant."""
+	if not is_nlsat_applicant(roles):
+		return False
+	return bool(
+		frappe.db.get_single_value(
+			"HD Settings", "hide_knowledge_base_for_applicant", cache=True
+		)
+	)
+
+
 def _get_issue_options(ticket_type: str) -> list:
 	rows = frappe.get_all(
 		"HD Ticket Type Of Issue",
