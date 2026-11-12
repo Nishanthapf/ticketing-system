@@ -88,6 +88,7 @@
   "auto_close_resolved_after",
   "sla_breach_reminder_section",
   "enable_sla_breach_reminder",
+  "hide_knowledge_base_for_applicant",
   "column_break_sbrt",
   "sla_breach_reminder_template",
   "raised_by_label_section",
@@ -574,6 +575,13 @@
    "label": "Enable SLA Breach Reminder"
   },
   {
+   "default": "1",
+   "description": "When enabled, NLSAT applicants do not see the Knowledge Base: the sidebar link, the article pages and the article suggestions on the new ticket form are hidden.",
+   "fieldname": "hide_knowledge_base_for_applicant",
+   "fieldtype": "Check",
+   "label": "Hide Knowledge Base for Applicant"
+  },
+  {
    "fieldname": "column_break_sbrt",
    "fieldtype": "Column Break"
   },
@@ -601,7 +609,7 @@
  "grid_page_length": 50,
  "issingle": 1,
  "links": [],
- "modified": "2026-11-05 10:00:00.000000",
+ "modified": "2026-11-12 10:00:00.000000",
  "modified_by": "Administrator",
  "module": "Helpdesk",
  "name": "HD Settings",
