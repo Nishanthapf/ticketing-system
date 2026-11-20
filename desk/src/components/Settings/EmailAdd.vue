@@ -163,6 +163,7 @@
 <script setup lang="ts">
 import { Link } from "@/components";
 import SettingsLayoutBase from "@/components/layouts/SettingsLayoutBase.vue";
+import { useAuthStore } from "@/stores/auth";
 import { capture } from "@/telemetry";
 import { __ } from "@/translation";
 import { EmailAccount, EmailService, EmailStep } from "@/types";
@@ -223,6 +224,7 @@ interface E {
 const emit = defineEmits<E>();
 
 const { updateOnboardingStep } = useOnboarding("helpdesk");
+const { isManager } = useAuthStore();
 
 const state = reactive<EmailAccountProviderAuthState>({
   service: "",
@@ -308,7 +310,9 @@ const addEmailRes = createResource({
   onSuccess: () => {
     toast.success(__("Email account created"));
     emit("update:step", "email-list");
-    updateOnboardingStep("setup_email_account");
+    if (isManager) {
+      updateOnboardingStep("setup_email_account");
+    }
     capture("email_account_created", { data: { service: state.service } });
   },
   onError: () => {

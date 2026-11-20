@@ -38,14 +38,31 @@ NLSAT_APPLICATION_FIELDS = [
 # SLA and routing details are internal; applicants only see what they need to track a ticket
 NLSAT_APPLICANT_HIDDEN_LIST_FIELDS = {"response_by", "resolution_by", "agent_group"}
 
-# Student-only fields, meaningless for an applicant who has no student record yet
-NLSAT_APPLICANT_HIDDEN_QUICK_FILTERS = {"custom_student_id", "custom_current_year"}
+# Student-only fields, meaningless for an applicant who has no student record
+# yet; Raised By because an applicant only sees their own tickets anyway
+NLSAT_APPLICANT_HIDDEN_QUICK_FILTERS = {
+	"custom_student_id",
+	"custom_current_year",
+	"custom_raised_by_label",
+}
 
 
 def is_nlsat_applicant(roles: list | None = None) -> bool:
 	roles = roles if roles is not None else frappe.get_roles()
 	# Applicants who have since enrolled keep the full student view
 	return NLSAT_APPLICANT_ROLE in roles and "slcm_Student" not in roles
+
+
+def hide_knowledge_base_for_applicant(roles: list | None = None) -> bool:
+	"""Whether the Knowledge Base is hidden from this (NLSAT applicant) user,
+	per HD Settings > Hide Knowledge Base for Applicant."""
+	if not is_nlsat_applicant(roles):
+		return False
+	return bool(
+		frappe.db.get_single_value(
+			"HD Settings", "hide_knowledge_base_for_applicant", cache=True
+		)
+	)
 
 
 def _get_issue_options(ticket_type: str) -> list:

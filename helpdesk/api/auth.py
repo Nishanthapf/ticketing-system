@@ -3,7 +3,10 @@ import frappe
 from helpdesk.utils import agent_only, get_agent_name, get_agents_team
 from helpdesk.utils import is_agent as _is_agent
 from helpdesk.helpdesk.doctype.hd_ticket.hd_ticket import _role_has_doctype_permission
-from helpdesk.api.nls_student import is_nlsat_applicant as _is_nlsat_applicant
+from helpdesk.api.nls_student import (
+    hide_knowledge_base_for_applicant,
+    is_nlsat_applicant as _is_nlsat_applicant,
+)
 
 
 @frappe.whitelist()
@@ -64,6 +67,7 @@ def get_user():
         "has_agent_record": has_agent_record,
         "can_create_ticket": can_create_ticket,
         "is_nlsat_applicant": is_nlsat_applicant,
+        "hide_knowledge_base": hide_knowledge_base_for_applicant(roles),
         "user_id": user_id,
         "is_manager": is_manager,
         "user_image": user_image,

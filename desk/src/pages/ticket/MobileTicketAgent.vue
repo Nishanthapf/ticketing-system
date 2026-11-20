@@ -238,6 +238,7 @@ import {
   TicketTab,
 } from "@/types";
 import { HDTicketStatus } from "@/types/doctypes";
+import { raisedByFieldLabel } from "@/utils";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 
@@ -352,7 +353,11 @@ const ticketFields = computed(() => {
       if (!fieldMeta) return null;
       fieldMeta = parseField(fieldMeta, ticket.value.doc);
       return {
-        label: fieldMeta?.label || f.fieldname,
+        label: raisedByFieldLabel(
+          f.fieldname,
+          fieldMeta?.label || f.fieldname,
+          ticket.value.doc
+        ),
         fieldname: f.fieldname,
         fieldtype: fieldMeta?.fieldtype,
         options: fieldMeta?.options || "",

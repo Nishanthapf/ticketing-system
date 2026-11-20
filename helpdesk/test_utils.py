@@ -423,6 +423,38 @@ def create_user(email: str):
     ).insert(ignore_permissions=True)
 
 
+def make_role(role_name: str):
+    """Create (or fetch) a desk-less Role, for role-driven tests."""
+    if frappe.db.exists("Role", role_name):
+        return frappe.get_doc("Role", role_name)
+    return frappe.get_doc(
+        doctype="Role", role_name=role_name, desk_access=0
+    ).insert(ignore_permissions=True)
+
+
+def make_raised_by_label(label_name: str, data_source: str = "User", enabled: int = 1):
+    """Create or update an HD Raised By Label with the given data source / enabled state."""
+    if frappe.db.exists("HD Raised By Label", label_name):
+        doc = frappe.get_doc("HD Raised By Label", label_name)
+    else:
+        doc = frappe.new_doc("HD Raised By Label")
+        doc.label_name = label_name
+    doc.data_source = data_source
+    doc.enabled = enabled
+    doc.save(ignore_permissions=True)
+    return doc
+
+
+def set_raised_by_role_map(rows: list[tuple[str, str]]):
+    """Replace HD Settings' Raised By role map with (role, label) rows, in order."""
+    settings = frappe.get_single("HD Settings")
+    settings.set("raised_by_role_map", [])
+    for role, label in rows:
+        settings.append("raised_by_role_map", {"role": role, "label": label})
+    settings.flags.ignore_mandatory = True
+    settings.save(ignore_permissions=True)
+
+
 def get_invitation(email: str):
     """Return the helpdesk User Invitation raised for an email, if any."""
     return frappe.db.get_value(

@@ -17,6 +17,38 @@ import TicketIcon from "./components/icons/TicketIcon.vue";
 import { getMeta } from "./stores/meta";
 import { __ } from "./translation";
 
+// NLSAT applicants share the student ticket template, most of whose fields
+// (hostel, transport, transcript, ...) never apply to them. Only these are
+// shown to them, in this order, on both desktop and mobile ticket views.
+export const NLSAT_APPLICANT_FIELDS = [
+  "subject",
+  "ticket_type",
+  "custom_type_of_issue",
+  "custom_programme",
+];
+
+// Requester fields whose label is prefixed with the ticket's Raised By label
+// (HD Settings > Ticket Settings > Raised By Label), e.g. "Applicant ID".
+const RAISED_BY_FIELD_SUFFIX: Record<string, string> = {
+  custom_student_name: "Name",
+  custom_student_id: "ID",
+};
+
+/**
+ * Label for a ticket field, made role-specific ("Faculty Name") for the
+ * requester fields when the ticket has a Raised By label; otherwise `label`.
+ */
+export function raisedByFieldLabel(
+  fieldname: string,
+  label: string,
+  doc: Record<string, any> | null | undefined
+): string {
+  const suffix = RAISED_BY_FIELD_SUFFIX[fieldname];
+  const raisedBy = doc?.custom_raised_by_label;
+  if (!suffix || !raisedBy) return label;
+  return `${__(raisedBy)} ${__(suffix)}`;
+}
+
 /**
  * Wrapper to create toasts, supplied with default options.
  * https://frappeui.com/components/toast.html
@@ -661,6 +693,14 @@ export function validateConditions(conditions: any[]): boolean {
   }
 
   return conditions.length > 0;
+}
+
+// frappe.client.delete is blocked for applicant-only users (slcm api_guard),
+// so portal editors remove their unsent uploads through this endpoint.
+export async function removePendingAttachment(attachment: string) {
+  await call("helpdesk.helpdesk.doctype.hd_ticket.api.remove_pending_attachment", {
+    name: attachment,
+  });
 }
 
 export async function removeAttachmentFromServer(attachment: string) {

@@ -2,6 +2,7 @@
 # See license.txt
 
 from datetime import timedelta
+from unittest.mock import patch
 
 import frappe
 from frappe.tests import IntegrationTestCase
@@ -11,6 +12,8 @@ from helpdesk.api.ticket import bulk_reply
 from helpdesk.helpdesk.doctype.hd_ticket.api import (
     close_ticket_by_contact,
     merge_ticket,
+    remove_pending_attachment,
+    reopen_ticket_by_contact,
     reply_by_contact,
     show_outside_hours_banner,
     split_ticket,
@@ -1628,6 +1631,22 @@ class TestHDTicket(IntegrationTestCase):
         with self.assertRaises(frappe.PermissionError):
             reply_by_contact(ticket.name, "<p>hi</p>")
 
+    def test_contact_without_role_write_can_close_and_reply(self):
+        # Sites whose Custom DocPerm gives Applicant only read/create.
+        user = create_contact("Test C1", CONTACTS[0]).get("user")
+        frappe.set_user(user)
+        ticket = make_ticket()
+
+        with patch(
+            "helpdesk.helpdesk.doctype.hd_ticket.hd_ticket.frappe.has_permission",
+            side_effect=lambda doctype, ptype="read", *args, **kwargs: ptype == "read",
+        ):
+            reply_by_contact(ticket.name, "<p>Any update?</p>")
+            close_ticket_by_contact(ticket.name)
+
+        ticket.reload()
+        self.assertEqual(ticket.status, "Closed")
+
     def test_portal_ticket_requires_description(self):
         for empty in ("", "<p></p>", "<p> </p>"):
             with self.assertRaises(frappe.MandatoryError):
@@ -1636,6 +1655,34 @@ class TestHDTicket(IntegrationTestCase):
         # Email-created tickets may have an empty body.
         ticket = make_ticket(description="", via_customer_portal=False)
         self.assertTrue(ticket.name)
+
+    def test_contact_can_reopen_closed_ticket(self):
+        user = create_contact("Test C1", CONTACTS[0]).get("user")
+        frappe.set_user(user)
+        ticket = make_ticket()
+        close_ticket_by_contact(ticket.name)
+
+        reopen_ticket_by_contact(ticket.name, "Issue is back")
+
+        ticket.reload()
+        self.assertNotEqual(ticket.status, "Closed")
+        self.assertEqual(ticket.reopen_reason, "Issue is back")
+
+    def test_contact_can_only_remove_own_pending_attachment(self):
+        user1 = create_contact("Test C1", CONTACTS[0]).get("user")
+        user2 = create_contact("Test C2", CONTACTS[1]).get("user")
+        frappe.set_user(user1)
+        file = frappe.get_doc(
+            {"doctype": "File", "file_name": "note.txt", "content": "hi", "is_private": 1}
+        ).insert()
+
+        frappe.set_user(user2)
+        with self.assertRaises(frappe.PermissionError):
+            remove_pending_attachment(file.name)
+
+        frappe.set_user(user1)
+        remove_pending_attachment(file.name)
+        self.assertFalse(frappe.db.exists("File", file.name))
 
     def test_agent_cannot_use_contact_close(self):
         ticket = make_ticket()

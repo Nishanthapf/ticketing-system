@@ -284,10 +284,12 @@ import { disableSettingModalOutsideClick } from "../settingsModal";
 import { useOnboarding } from "frappe-ui/frappe";
 import { __ } from "@/translation";
 import SettingsLayoutBase from "@/components/layouts/SettingsLayoutBase.vue";
+import { useAuthStore } from "@/stores/auth";
 import { SlaPolicyListResourceSymbol } from "@/types";
 import { HDServiceLevelAgreement } from "@/types/doctypes";
 
 const { updateOnboardingStep } = useOnboarding("helpdesk");
+const { isManager } = useAuthStore();
 
 const showConfirmDialog = ref({
   show: false,
@@ -434,7 +436,9 @@ const createSla = () => {
           doctype: "HD Service Level Agreement",
           name: data.name,
         });
-        updateOnboardingStep("setup_sla", true);
+        if (isManager) {
+          updateOnboardingStep("setup_sla", true);
+        }
       },
     }
   );

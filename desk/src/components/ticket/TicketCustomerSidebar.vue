@@ -116,7 +116,13 @@
 import { ITicket } from "@/pages/ticket/symbols";
 import { useAuthStore } from "@/stores/auth";
 import { Field } from "@/types";
-import { dateFormat, dateTooltipFormat, formatTime } from "@/utils";
+import {
+  dateFormat,
+  dateTooltipFormat,
+  formatTime,
+  NLSAT_APPLICANT_FIELDS,
+  raisedByFieldLabel,
+} from "@/utils";
 import { Avatar, dayjs, Tooltip } from "frappe-ui";
 import { computed, inject } from "vue";
 
@@ -124,15 +130,6 @@ const emit = defineEmits(["open"]);
 
 const ticket = inject(ITicket);
 const authStore = useAuthStore();
-
-// NLSAT applicants share the student ticket template, most of whose fields
-// (hostel, transport, transcript, ...) never apply to them.
-const NLSAT_APPLICANT_FIELDS = [
-  "subject",
-  "ticket_type",
-  "custom_type_of_issue",
-  "custom_programme",
-];
 
 const slaData = computed(() => {
   const firstResponse = firstResponseData();
@@ -250,7 +247,7 @@ const ticketAdditionalInfo = computed(() => {
     .map((field: Field) => {
       const option = {
         fieldname: field.fieldname,
-        label: field.label,
+        label: raisedByFieldLabel(field.fieldname, field.label, ticket.data),
         value: ticket.data[field.fieldname],
       };
       if (field.fieldtype === "Date") {

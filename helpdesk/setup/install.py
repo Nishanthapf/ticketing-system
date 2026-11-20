@@ -10,6 +10,10 @@ from helpdesk.setup.default_views import add_default_views
 from .default_template import create_default_template
 from .escalation_email_templates import create_escalation_email_templates_if_missing
 from .file import create_helpdesk_folder
+from .raised_by_label import (
+    create_default_raised_by_labels,
+    create_default_raised_by_role_map,
+)
 from .team import create_ootb_teams
 from .ticket_feedback import create_ticket_feedback_options
 from .ticket_type import (
@@ -41,6 +45,8 @@ def after_install():
     create_nls_ticket_types()
     create_nlsat_type_of_issues()
     create_escalation_email_templates_if_missing()
+    create_default_raised_by_labels()
+    create_default_raised_by_role_map()
     try:
         create_welcome_ticket()
     except Exception:

@@ -208,7 +208,7 @@ export const router = createRouter({
   routes,
 });
 
-// NLSAT applicants have no access to the knowledge base
+// Blocked for NLSAT applicants when HD Settings > Hide Knowledge Base for Applicant is set
 const CUSTOMER_KB_ROUTES = ["CustomerKnowledgeBase", "Articles", "ArticlePublic"];
 
 router.beforeEach(async (to, _, next) => {
@@ -227,7 +227,7 @@ router.beforeEach(async (to, _, next) => {
   } else if (!to.meta.public && !authStore.hasDeskAccess) {
     next({ name: "TicketsCustomer" });
   } else if (
-    authStore.isNlsatApplicant &&
+    authStore.hideKnowledgeBase &&
     CUSTOMER_KB_ROUTES.includes(to.name as string)
   ) {
     next({ name: "TicketsCustomer" });

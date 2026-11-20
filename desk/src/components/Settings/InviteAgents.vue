@@ -215,7 +215,9 @@ const inviteByEmailResource = createResource({
     resetInputValues();
     handleInviteUserSuccess(data);
     pendingInvitesResource.reload();
-    updateOnboardingStep("invite_your_team");
+    if (isManager) {
+      updateOnboardingStep("invite_your_team");
+    }
     capture("agents_invited", {
       data: {
         role: role.value,

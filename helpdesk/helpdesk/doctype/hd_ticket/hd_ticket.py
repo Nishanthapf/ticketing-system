@@ -25,6 +25,7 @@ from pypika.functions import Count
 from pypika.queries import Query
 from pypika.terms import Criterion
 
+from helpdesk.api.nlsat_portal import get_nlsat_applicant_helpdesk_url
 from helpdesk.helpdesk.doctype.hd_settings.helpers import (
     get_default_email_content,
     is_email_content_empty,
@@ -92,6 +93,7 @@ class HDTicket(Document):
         self.check_update_perms()
         self.set_ticket_type()
         self.set_raised_by()
+        self.set_raised_by_details()
         self.set_team_from_ticket_type()
         self.set_priority()
         self.set_first_responded_on()
@@ -420,6 +422,26 @@ class HDTicket(Document):
             return
         self.raised_by = frappe.session.user
 
+    def set_raised_by_details(self):
+        """
+        Raised By label (Student / Applicant / Faculty / ...) from the
+        requester's roles, plus Name / ID when the portal form didn't fill
+        them (e.g. tickets created from inbound email).
+        """
+        if not self.is_new() and self.custom_raised_by_label:
+            return
+
+        from helpdesk.api.raised_by import get_raised_by_context
+
+        ctx = get_raised_by_context(self.raised_by, self.ticket_type)
+        # Always recomputed on insert: the label must come from the
+        # requester's roles, never from a value posted by the client.
+        self.custom_raised_by_label = ctx.get("raised_by_label")
+        if not self.custom_student_name:
+            self.custom_student_name = ctx.get("custom_student_name")
+        if not self.custom_student_id:
+            self.custom_student_id = ctx.get("custom_student_id")
+
     def set_contact(self):
         email_id = parseaddr(self.raised_by)[1]
         # flake8: noqa
@@ -740,8 +762,23 @@ class HDTicket(Document):
         """
         Gate for the portal endpoints (close / reply by contact). Agents use the
         agent-side actions, which keep the agent-only validations.
+
+        Ownership is checked directly instead of role-level "write": Custom
+        DocPerm differs per site (not shipped as a fixture), and on sites where
+        Applicant has only read/create the contact could not close or reply to
+        their own ticket.
         """
-        if is_agent() or not frappe.has_permission("HD Ticket", "write", self):
+        user = frappe.session.user
+        is_ticket_contact = user in (
+            self.contact,
+            self.raised_by,
+            self.owner,
+        ) or _is_customer_manager(self.customer, user)
+        if (
+            is_agent()
+            or not is_ticket_contact
+            or not frappe.has_permission("HD Ticket", "read", self)
+        ):
             frappe.throw(_("Not permitted"), frappe.PermissionError)
 
     def close_by_contact(
@@ -816,13 +853,21 @@ class HDTicket(Document):
     @property
     def portal_uri(self):
         root_uri = frappe.utils.get_url()
-        # Check if the ticket was raised by a student; if so, link to the student portal
+        # Checked before Student Master: an applicant (not yet slcm_Student) can
+        # already have a Student Master record and must still get their admission portal
+        if applicant_url := self.get_applicant_portal_uri():
+            return applicant_url
         is_student = frappe.db.exists("Student Master", {"user": self.raised_by}) or \
             frappe.db.exists("Student Master", {"email": self.raised_by}) or \
             frappe.db.exists("Student Master", {"official_email_id": self.raised_by})
         if is_student:
             return f"{root_uri}/student-portal/support?ticket={self.name}"
         return f"{root_uri}/helpdesk/my-tickets/{self.name}"
+
+    def get_applicant_portal_uri(self):
+        # NLSAT applicants use the helpdesk inside their admission portal, on
+        # the domestic or international portal's own domain
+        return get_nlsat_applicant_helpdesk_url(self.raised_by, self.ticket_type)
 
     def check_escalation_read_only(self):
         """
