@@ -339,7 +339,7 @@ function showConfirmationDialog() {
 const closeTicket = createResource({
   url: "helpdesk.helpdesk.doctype.hd_ticket.api.close_ticket_by_contact",
   debounce: 300,
-  makeParams: () => ({ name: props.ticketId }),
+  makeParams: () => ({ name: String(props.ticketId) }),
   onSuccess: () => {
     ticket.reload();
     toast.success(__("Ticket closed successfully."));

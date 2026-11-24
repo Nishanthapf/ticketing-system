@@ -86,7 +86,7 @@ const closeTicket = createResource({
   url: "helpdesk.helpdesk.doctype.hd_ticket.api.close_ticket_by_contact",
   debounce: 300,
   makeParams: (params) => ({
-    name: ticket.data.name,
+    name: String(ticket.data.name),
     feedback: params.feedback,
     feedback_extra: params.feedback_extra,
   }),

@@ -54,20 +54,20 @@ def new(doc: dict, attachments: list[dict] = []):
 # Applicant-only website users.
 @frappe.whitelist(methods=["POST"])
 def close_ticket_by_contact(
-    name: str, feedback: str | None = None, feedback_extra: str | None = None
+    name: str | int, feedback: str | None = None, feedback_extra: str | None = None
 ):
     ticket = frappe.get_doc("HD Ticket", name)
     ticket.close_by_contact(feedback, feedback_extra)
 
 
 @frappe.whitelist(methods=["POST"])
-def reply_by_contact(name: str, message: str, attachments: list[dict] | None = None):
+def reply_by_contact(name: str | int, message: str, attachments: list[dict] | None = None):
     ticket = frappe.get_doc("HD Ticket", name)
     ticket.reply_by_contact(message, attachments)
 
 
 @frappe.whitelist(methods=["POST"])
-def reopen_ticket_by_contact(name: str, reason: str):
+def reopen_ticket_by_contact(name: str | int, reason: str):
     ticket = frappe.get_doc("HD Ticket", name)
     ticket.reopen_ticket(reason)
 
@@ -82,7 +82,7 @@ def remove_pending_attachment(name: str):
 
 
 @frappe.whitelist()
-def get_one(name: str, is_customer_portal: bool = False):
+def get_one(name: str | int, is_customer_portal: bool = False):
     frappe.has_permission("HD Ticket", "read", name, throw=True)
     QBContact = frappe.qb.DocType("Contact")
     QBTicket = frappe.qb.DocType("HD Ticket")
